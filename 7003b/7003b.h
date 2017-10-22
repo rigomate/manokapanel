@@ -14,8 +14,9 @@
 
 using namespace stm32plus;
 
-
-struct UsartOwnPackage {
+/* This USART setup can be found in the follwing file:
+ * */
+struct UsartSetup {
   enum {
     Port_CK=GPIOA_BASE,
     Port_TX=GPIOA_BASE,
@@ -50,8 +51,12 @@ private:
     void initDisplay(void);
     void sendcommand(uint8_t byte);
 
-    Usart1_Custom<UsartOwnPackage> *usart;
+    /*These will be created by the constructor, but access is required elsewhere also
+     * So we create define a pointer in the class body
+     */
+    Usart1_Custom<UsartSetup> *usart;
     UsartPollingOutputStream *outputStream;
+
     GpioA<DefaultDigitalOutputFeature<10> > resetpin;
     GpioA<DefaultDigitalInputFeature<12> > busypin;
 };

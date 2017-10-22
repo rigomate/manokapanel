@@ -5,19 +5,34 @@
  */
 
 #include "7003b/7003b.h"
+#include "stepper/stepper.h"
 
 
 /*
  * Main entry point
  */
 
+volatile int direction = 0;
 int main() {
 
   display_7003b test;
+  stepper_drv8806 stepper;
+  MillisecondTimer::initialise();
   //std::string maki("maki");
   //test.sendstring("maki");
 
-  while(1);
+  while(1)
+      {
+          if (direction == 0)
+              {
+                  stepper.stepPositive();
+              }
+          else
+          {
+              stepper.stepNegative();
+          }
+          MillisecondTimer::delay(5);
+      }
   // not reached
   return 0;
 }
