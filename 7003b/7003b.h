@@ -41,6 +41,10 @@ public:
     void sendhello(void);
     void sendstring(char *text);
 
+    void screensaver(void);
+    void bitmap(void);
+    void horizontal_scroll(void);
+
     //Constructor
     display_7003b();
 

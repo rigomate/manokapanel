@@ -21,8 +21,11 @@ int main() {
   //std::string maki("maki");
   //test.sendstring("maki");
 
+  test.bitmap();
+  test.horizontal_scroll();
   while(1)
       {
+/*
           if (direction == 0)
               {
                   stepper.stepPositive();
@@ -31,6 +34,7 @@ int main() {
           {
               stepper.stepNegative();
           }
+          */
           MillisecondTimer::delay(5);
       }
   // not reached

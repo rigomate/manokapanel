@@ -969,6 +969,8 @@
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2098117847" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/conf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 								</option>
@@ -985,6 +987,8 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std.1659158818" name="Language standard" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std.gnucpp0x" valueType="enumerated"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1139795553" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/conf}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus/include/stl}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
