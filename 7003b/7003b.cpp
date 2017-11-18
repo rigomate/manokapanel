@@ -5,7 +5,7 @@
  *      Author: mester
  */
 #include "7003b.h"
-#include "GUI.h"
+#include <vector>
 
 static const uint8_t image_data_viragok_kis[1024] = {
     0x00, 0x00, 0x00, 0x00,
@@ -303,6 +303,21 @@ void display_7003b::screensaver(void)
 
 void display_7003b::horizontal_scroll(void)
 {
+#if 0
+    std::vector<int> v = {1,2,3,4};
+    std::vector<uint8_t> command;/* = {
+            0x1f,
+            0x28,
+            0x61,
+            0x10,
+            0x04,
+            0x00
+            0xff,
+            0x00,
+            0x01
+    };
+*/
+#endif
     sendcommand(0x1f);
     sendcommand(0x28);
     sendcommand(0x61);

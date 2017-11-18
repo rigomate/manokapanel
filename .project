@@ -3,7 +3,6 @@
 	<name>manokapanel</name>
 	<comment></comment>
 	<projects>
-		<project>stm32plus</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

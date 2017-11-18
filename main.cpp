@@ -6,6 +6,12 @@
 
 #include "7003b/7003b.h"
 #include "stepper/stepper.h"
+#include "ws2812/ws2812_class.h"
+
+extern "C" {
+#include "fwlib/f1/stdperiph/inc/stm32f10x_rcc.h"
+}
+
 
 
 /*
@@ -13,13 +19,19 @@
  */
 
 volatile int direction = 0;
+volatile RCC_ClocksTypeDef RCC_Clocks;
+uint32_t debugval;
 int main() {
+    RCC_GetClocksFreq((RCC_ClocksTypeDef*)&RCC_Clocks);
 
   display_7003b test;
-  stepper_drv8806 stepper;
+  //stepper_drv8806 stepper;
   MillisecondTimer::initialise();
   //std::string maki("maki");
   //test.sendstring("maki");
+  ws2812 colorled;
+
+  colorled.setcolor(0, 255, 0, 0);
 
   test.bitmap();
   test.horizontal_scroll();
@@ -34,8 +46,13 @@ int main() {
           {
               stepper.stepNegative();
           }
-          */
-          MillisecondTimer::delay(5);
+*/
+          //MillisecondTimer::delay(5);
+          debugval = *((uint32_t*)0x40000040);
+          if(debugval != 0x1E && debugval != 0x3c && debugval != 0x00)
+              {
+                  direction++;
+              }
       }
   // not reached
   return 0;
