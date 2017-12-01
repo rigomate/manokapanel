@@ -277,12 +277,18 @@ void display_7003b::sendcommand(uint8_t byte)
 //Actual display initializer stuff
 void display_7003b::initDisplay(void)
 {
-    MillisecondTimer::initialise();
+
 
     resetpin[10].reset();
-    MillisecondTimer::delay(10);
+    for (int i = 0; i< 500000; i++)
+        {
+            __NOP();
+        }
     resetpin[10].set();
-    MillisecondTimer::delay(10);
+    for (int i = 0; i< 500000; i++)
+        {
+            __NOP();
+        }
 
     //ESC @ init Initialize Display
     sendcommand(0x1b);

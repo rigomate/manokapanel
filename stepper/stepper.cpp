@@ -100,14 +100,19 @@ void stepper_drv8806::init_driver()
 
 void stepper_drv8806::StepperStep(uint8_t StepPos)
 {
-    MillisecondTimer::initialise();
+    //MillisecondTimer::initialise();
 
     //Send Data
     sender->send(StepPos);
 
     while (!sender->readyToSend());
 
-    MillisecondTimer::delay(1);
+    for (int i = 0; i< 50; i++)
+        {
+            __NOP();
+        }
+
+    //MillisecondTimer::delay(1);
     //Do a Latch
     StepperResetLatch[12].set();
     StepperResetLatch[12].reset();
