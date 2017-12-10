@@ -2,13 +2,13 @@ ENTRY(Reset_Handler)
 
 _estack = 0x20002000;     	/* end of $(RAM_LENGTH) RAM */
 
-_Min_Heap_Size = 0;      	  /* required amount of heap  */
+_Min_Heap_Size = 4096;      	  /* required amount of heap  */
 _Min_Stack_Size = 0x100; 		/* required amount of stack (256 bytes) */
 
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 128K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 8K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 20K
 }
 
 SECTIONS

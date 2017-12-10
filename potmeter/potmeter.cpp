@@ -27,10 +27,21 @@ void potmeter::startConversion(void)
 
 uint16_t potmeter::getVal(uint8_t potNum)
 {
-    return readBuffer[potNum];
+    static float average[7] = {0};
+    average[potNum] = approxRollingAverage(average[potNum], readBuffer[potNum]);
+    return (uint16_t)average[potNum];
+    //return readBuffer[potNum];
 }
 
 void potmeter::onComplete(DmaEventType det) {
   if(det==DmaEventType::EVENT_COMPLETE)
     _ready=true;
+}
+
+uint32_t potmeter::approxRollingAverage(float avg, uint32_t new_sample)
+{
+    avg -= avg / 10;
+    avg += new_sample / 10;
+
+    return avg;
 }

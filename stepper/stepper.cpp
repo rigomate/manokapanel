@@ -107,7 +107,7 @@ void stepper_drv8806::StepperStep(uint8_t StepPos)
 
     while (!sender->readyToSend());
 
-    for (int i = 0; i< 50; i++)
+    for (int i = 0; i< 500; i++)
         {
             __NOP();
         }

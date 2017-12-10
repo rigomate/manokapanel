@@ -24,6 +24,7 @@ public:
 private:
 
     void onComplete(DmaEventType det);
+    uint32_t approxRollingAverage(float avg, uint32_t new_sample);
 
     Adc1DmaChannel<AdcDmaFeature<Adc1PeripheralTraits>,Adc1DmaChannelInterruptFeature> dma;
     Adc1<
