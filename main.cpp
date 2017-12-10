@@ -57,6 +57,7 @@ static void prvLedTask( void *pvParameters )
     GpioB<DefaultDigitalOutputFeature<3> > pb_out;
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,6,7,8,9> > pb;
     GpioC<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,14> > pc;
+    vTaskDelay(500 / portTICK_PERIOD_MS);
     for( ;; )
     {
         //poti.startConversion();
@@ -81,7 +82,8 @@ static void prvLedTask( void *pvParameters )
         if (color1 >10) color1 = color1 /10 + 10;
         if (c2 >10) c2 = c2 /10 + 10;
         if (c3 >10) c3 = c3 /10 + 10;
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+
+
         colorled.setcolor(0, color1, c2, c3);
         colorled.setcolor(1, c2, c3, color1);
         colorled.setcolor(2, c3, color1, c2);
