@@ -432,7 +432,7 @@ void PendSV_Handler( void )
 	);
 }
 /*-----------------------------------------------------------*/
-
+extern void SysTick_Handler_stm32plus(void);
 void SysTick_Handler( void )
 {
 	/* The SysTick runs at the lowest interrupt priority, so when this interrupt
@@ -441,6 +441,7 @@ void SysTick_Handler( void )
 	known. */
 	portDISABLE_INTERRUPTS();
 	{
+	    SysTick_Handler_stm32plus();
 		/* Increment the RTOS tick. */
 		if( xTaskIncrementTick() != pdFALSE )
 		{

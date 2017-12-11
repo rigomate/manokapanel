@@ -9,6 +9,7 @@
 #include "ws2812/ws2812_class.h"
 #include "potmeter/potmeter.h"
 #include "pwm/pwm.h"
+#include "config/button.h"
 
 extern "C" {
 #include "fwlib/f1/stdperiph/inc/stm32f10x_rcc.h"
@@ -63,6 +64,8 @@ static void prvLedTask( void *pvParameters )
     xTaskResumeAll();
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,6,7,8,9> > pb;
     GpioC<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,14> > pc;
+
+    AutoRepeatPushButton button(pb[8],true,999999,150);
 
     test.bitmap();
     test.horizontal_scroll();
@@ -124,6 +127,7 @@ static void prvLedTask( void *pvParameters )
             {
                 pa[15].set();
             }
+
         if(pb[8].read())
             {
                 pb_out[3].set();
@@ -131,8 +135,11 @@ static void prvLedTask( void *pvParameters )
         else
             {
                 pb_out[3].reset();
+            }
+
+        if(button.getState()==PushButton::Pressed)
+            {
                 test.horizontal_scroll();
-                vTaskDelay(100);
             }
 
         if(pb[5].read())
