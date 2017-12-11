@@ -12,7 +12,7 @@ pwm::pwm()
 {
 
     timer1_4.setTimeBaseByFrequency(100000, 255);
-    timer1_4.initCompareForPwmOutput(100, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
+    timer1_4.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
     timer1_4.enablePeripheral();
 /*
     timer2_1.setTimeBaseByFrequency(100000, 255);
@@ -28,11 +28,11 @@ pwm::pwm()
     timer3_2.enablePeripheral();
 
     timer3_3.setTimeBaseByFrequency(100000, 255);
-    timer3_3.initCompareForPwmOutput(100, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
+    timer3_3.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
     timer3_3.enablePeripheral();
 
     timer3_4.setTimeBaseByFrequency(100000, 255);
-    timer3_4.initCompareForPwmOutput(100, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
+    timer3_4.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
     timer3_4.enablePeripheral();
 
 }

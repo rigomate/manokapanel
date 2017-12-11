@@ -42,7 +42,7 @@
 
 uint8_t* setLEDcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE);
 void setWHOLEcolor(uint8_t RED, uint8_t GREEN, uint8_t BLUE);
-void fillBufferBlack(void);
+uint8_t* fillBufferBlack(void);
 void fillBufferWhite(void);
 //void TIMx_DMA_IRQHandler(void);
 

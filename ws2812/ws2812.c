@@ -45,7 +45,7 @@ void setWHOLEcolor(uint8_t RED, uint8_t GREEN, uint8_t BLUE) {
 		setLEDcolor(index, RED, GREEN, BLUE);
 }
 
-void fillBufferBlack(void) {
+uint8_t* fillBufferBlack(void) {
 	/*Fill LED buffer - ALL OFF*/
 	uint32_t index, buffIndex;
 	buffIndex = 0;
@@ -64,6 +64,8 @@ void fillBufferBlack(void) {
 		LEDbuffer[buffIndex] = 0;
 		buffIndex++;
 	}
+
+	return LEDbuffer;
 }
 
 void fillBufferWhite(void) {

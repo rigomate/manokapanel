@@ -51,13 +51,22 @@ static void prvLedTask( void *pvParameters )
 
 
     pwm pwmc;
+    vTaskSuspendAll();
     ws2812 colorled;
+    display_7003b test;
+
 
     GpioA<DefaultDigitalOutputFeature<15> > pa;
+    pa.setAll();
     GpioB<DefaultDigitalOutputFeature<3> > pb_out;
+    pb_out.setAll();
+    xTaskResumeAll();
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,6,7,8,9> > pb;
     GpioC<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,14> > pc;
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    test.bitmap();
+    test.horizontal_scroll();
+
     for( ;; )
     {
         //poti.startConversion();
@@ -84,10 +93,17 @@ static void prvLedTask( void *pvParameters )
         if (c3 >10) c3 = c3 /10 + 10;
 
 
+        vTaskSuspendAll();
         colorled.setcolor(0, color1, c2, c3);
-        colorled.setcolor(1, c2, c3, color1);
-        colorled.setcolor(2, c3, color1, c2);
+        xTaskResumeAll();
 
+        vTaskSuspendAll();
+        colorled.setcolor(1, c2, c3, color1);
+        xTaskResumeAll();
+
+        vTaskSuspendAll();
+        colorled.setcolor(2, c3, color1, c2);
+        xTaskResumeAll();
 
         pwmval = (potidebug[5] * 100)/ 255;
         pwmc.setpwm(32, pwmval);
@@ -115,6 +131,8 @@ static void prvLedTask( void *pvParameters )
         else
             {
                 pb_out[3].reset();
+                test.horizontal_scroll();
+                vTaskDelay(100);
             }
 
         if(pb[5].read())
@@ -164,7 +182,7 @@ int main() {
 
     RCC_GetClocksFreq((RCC_ClocksTypeDef*)&RCC_Clocks);
 
-  display_7003b test;
+  //display_7003b test;
 
   //stepper_drv8806 stepper;
   //MillisecondTimer::initialise();
@@ -175,8 +193,8 @@ int main() {
 
 
 
-  test.bitmap();
-  test.horizontal_scroll();
+  //test.bitmap();
+  //test.horizontal_scroll();
 
   xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 10, NULL );
   xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );

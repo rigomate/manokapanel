@@ -14,7 +14,10 @@ extern "C" {
 
 ws2812::ws2812()
 {
-    fillBufferBlack();
+    uint8_t *buf;
+
+    buf = fillBufferBlack();
+    writedata(buf, LED_BUFFER_SIZE);
     //timer2.setTimeBaseByFrequency(10000000,49999);
     timer2.initialiseTimeBase(89, 0, 0,TIM_CounterMode_Up);
     //timer2.initCompareForPwmOutput(50, TIM_OCMode_PWM1, TIM_OCPolarity_High);
