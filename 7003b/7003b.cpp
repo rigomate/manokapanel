@@ -307,6 +307,20 @@ void display_7003b::screensaver(void)
     sendcommand(0x04);
 }
 
+void display_7003b::clear(void)
+{
+    sendcommand(0x0c);
+}
+
+void display_7003b::character(char *character)
+{
+    while (*character != 0)
+        {
+            sendcommand(*character);
+            character++;
+        }
+}
+
 void display_7003b::horizontal_scroll(void)
 {
 #if 0
@@ -333,8 +347,8 @@ void display_7003b::horizontal_scroll(void)
     sendcommand(0);
 
     //cycles
-    sendcommand(255);
     sendcommand(0);
+    sendcommand(1);
 
     sendcommand(1);
 }

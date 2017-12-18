@@ -16,6 +16,7 @@ stepper_drv8806::stepper_drv8806()
     sender = new MySender(senderParams);
 
     init_driver();
+    isEnabled = true;
 }
 
 stepper_drv8806::~stepper_drv8806()
@@ -25,62 +26,22 @@ stepper_drv8806::~stepper_drv8806()
 
 void stepper_drv8806::stepPositive()
 {
-    switch (currentStepPos) {
-        case 1:
-            currentStepPos = 2;
-            break;
-        case 3:
-            currentStepPos = 2;
-            break;
-        case 2:
-            currentStepPos = 4;
-            break;
-        case 6:
-            currentStepPos = 4;
-            break;
-        case 4:
-            currentStepPos = 8;
-            break;
-        case 12:
-            currentStepPos = 8;
-            break;
-        case 8:
-            currentStepPos = 1;
-            break;
-        default:
-            break;
-    }
-    StepperStep(currentStepPos);
+    currentStepPos++;
+    if (currentStepPos > 7)
+        {
+            currentStepPos = 0;
+        }
+    StepperStep(StepTable[currentStepPos]);
 }
 
 void stepper_drv8806::stepNegative()
 {
-    switch (currentStepPos) {
-        case 8:
-            currentStepPos = 4;
-            break;
-        case 12:
-            currentStepPos = 4;
-            break;
-        case 4:
-            currentStepPos = 2;
-            break;
-        case 6:
-            currentStepPos = 2;
-            break;
-        case 2:
-            currentStepPos = 1;
-            break;
-        case 3:
-            currentStepPos = 1;
-            break;
-        case 1:
-            currentStepPos = 8;
-            break;
-        default:
-            break;
-    }
-    StepperStep(currentStepPos);
+    currentStepPos--;
+    if (currentStepPos < 0)
+        {
+            currentStepPos = 7;
+        }
+    StepperStep(StepTable[currentStepPos]);
 }
 
 void stepper_drv8806::init_driver()
@@ -116,4 +77,22 @@ void stepper_drv8806::StepperStep(uint8_t StepPos)
     //Do a Latch
     StepperResetLatch[12].set();
     StepperResetLatch[12].reset();
+}
+
+void stepper_drv8806::Disable(void)
+{
+    if (isEnabled)
+        {
+            StepperEnablePin[13].set();
+            isEnabled = false;
+        }
+}
+
+void stepper_drv8806::Enable(void)
+{
+    if (!isEnabled)
+        {
+            StepperEnablePin[13].reset();
+            isEnabled = true;
+        }
 }

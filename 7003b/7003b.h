@@ -42,6 +42,8 @@ public:
     void sendstring(char *text);
 
     void screensaver(void);
+    void clear(void);
+    void character(char *character);
     void bitmap(void);
     void horizontal_scroll(void);
 

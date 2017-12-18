@@ -37,16 +37,21 @@ public:
 
     void stepPositive(void);
     void stepNegative(void);
+    void Disable(void);
+    void Enable(void);
 
 private:
 
     void init_driver(void);
     void StepperStep(uint8_t StepPos);
 
-    uint8_t currentStepPos = 1;
+    int8_t currentStepPos = 0;
 
     typedef Spi2<> MySender;
     MySender *sender;
+    bool isEnabled;
+
+    uint8_t StepTable[8] = {1,3,2,6,4,12,8,9};
 
     //GpioC<DefaultDigitalOutputFeature<10> > resetpin;
     GpioC<DefaultDigitalOutputFeature<13> > StepperEnablePin;
