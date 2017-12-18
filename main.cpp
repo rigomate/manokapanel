@@ -137,36 +137,91 @@ static void prvStepperTask( void *pvParameters )
     }
 }
 
+static void prvDisplayTask( void *pvParameters )
+{
+
+    display_7003b display;
+    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
+    AutoRepeatPushButton button(pb[8],true,999999,150);
+    AutoRepeatPushButton button_counter(pb[5],true,5000,150);
+    GpioB<DefaultDigitalOutputFeature<3> > pb_out;
+    pwm pwmc;
+
+
+    char asciistring[10];
+    uint16_t display_counter = 0;
+
+    //pb_out.setAll();
+
+    display.define_user_window(1, 35, 0, 56, 4);
+    display.select_user_window(0);
+    display.bitmap();
+    display.horizontal_scroll();
+    for(;;)
+    {
+
+        if(button.getState()==PushButton::Pressed)
+            {
+                display.select_user_window(0);
+                display.bitmap();
+                display.horizontal_scroll();
+            }
+
+        if (button_counter.getState() == PushButton::Pressed)
+            {
+                display.select_user_window(1);
+                display.clear();
+                display.cursor_set(0, 8);
+                snprintf(asciistring,9, "%d", display_counter++);
+                //display.character(asciistring);
+                display.draw_own_string(asciistring, &ManoFont);
+            }
+
+        if(pb[8].read())
+            {
+                pb_out[3].set();
+            }
+        else
+            {
+                pb_out[3].reset();
+            }
+
+
+        if(pb[5].read())
+            {
+                pwmc.setpwm(34, 0);
+            }
+        else
+            {
+                pwmc.setpwm(34, 100);
+            }
+
+        vTaskDelay(5 / portTICK_RATE_MS);
+    }
+}
 static void prvLedTask( void *pvParameters )
 {
 
     uint16_t display_counter = 0;
     char asciistring[10];
 
-    pwm pwmc;
+
     vTaskSuspendAll();
     ws2812 colorled;
-    display_7003b display;
 
 
     GpioA<DefaultDigitalOutputFeature<15> > pa;
     pa.setAll();
-    GpioB<DefaultDigitalOutputFeature<3> > pb_out;
-    pb_out.setAll();
+
     xTaskResumeAll();
-    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,6,8,9> > pb;
+    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,6,9> > pb;
     GpioC<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,14> > pc;
-
-    AutoRepeatPushButton button(pb[8],true,999999,150);
-
-    AutoRepeatPushButton button_counter(pb[5],true,5000,150);
 
     buttonpoti<timer3_3, Button_PB7> buttonpoti1(false);
     buttonpoti<timer3_2, Button_PC14> buttonpoti2(true);
     buttonpoti<timer1_4, Button_PB9> buttonpoti3(false);
 
-    display.bitmap();
-    display.horizontal_scroll();
+
 
     for( ;; )
     {
@@ -242,35 +297,7 @@ static void prvLedTask( void *pvParameters )
                 pa[15].set();
             }
 
-        if(pb[8].read())
-            {
-                pb_out[3].set();
-            }
-        else
-            {
-                pb_out[3].reset();
-            }
 
-        if(button.getState()==PushButton::Pressed)
-            {
-                display.bitmap();
-                display.horizontal_scroll();
-            }
-
-        if (button_counter.getState() == PushButton::Pressed)
-            {
-                display.clear();
-                snprintf(asciistring,9, "%d", display_counter++);
-                display.character(asciistring);
-            }
-        if(pb[5].read())
-            {
-                pwmc.setpwm(34, 0);
-            }
-        else
-            {
-                pwmc.setpwm(34, 100);
-            }
 
         vTaskDelay(5);
     }
@@ -283,6 +310,10 @@ static void prvPotiTask( void *pvParameters )
     for (int i = 0; i < 7; i++)
         {
             xQueuePoti[i] = xQueueCreate( 1, sizeof( uint16_t ) );
+            if (xQueuePoti[i] == NULL)
+            {
+                __NOP();
+            }
         }
 
     potmeter poti;
@@ -346,7 +377,8 @@ int main() {
   //test.bitmap();
   //test.horizontal_scroll();
 
-  xTaskCreate( prvStepperTask, "Stepper", 1024, NULL, 9, NULL );
+  xTaskCreate( prvDisplayTask, "Display", 512, NULL, 1, NULL );
+  xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 9, NULL );
   xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
   xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
 

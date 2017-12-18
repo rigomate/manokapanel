@@ -11,6 +11,9 @@
 #include "config/stm32plus.h"
 #include "config/usart.h"
 
+extern "C" {
+#include "mano_font.h"
+}
 
 using namespace stm32plus;
 
@@ -32,7 +35,8 @@ struct UsartSetup {
   };
 };
 
-
+#define busyPin busypin[12]
+#define resetPin resetpin[10]
 class display_7003b {
 
 public:
@@ -46,6 +50,11 @@ public:
     void character(char *character);
     void bitmap(void);
     void horizontal_scroll(void);
+    void define_user_window(uint8_t window_num, uint16_t left, uint16_t top, uint16_t x_size, uint16_t y_size);
+    void select_user_window(uint8_t window_num);
+    void cursor_set(uint16_t x_pos, uint16_t y_pos);
+    void draw_own_char(char character, const tFont *Font);
+    void draw_own_string(char *string, const tFont *Font);
 
     //Constructor
     display_7003b();
@@ -63,6 +72,8 @@ private:
     Usart1_Custom<UsartSetup> *usart;
     UsartPollingOutputStream *outputStream;
 
+
     GpioA<DefaultDigitalOutputFeature<10> > resetpin;
     GpioA<DefaultDigitalInputFeature<12> > busypin;
+
 };

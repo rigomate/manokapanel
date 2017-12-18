@@ -270,7 +270,7 @@ static const uint8_t image_data_viragok_kis[1024] = {
 /* sends a command to the display */
 void display_7003b::sendcommand(uint8_t byte)
 {
-    while(!busypin.read());
+    while(busyPin.read());
     outputStream->write(byte);
 }
 
@@ -279,12 +279,12 @@ void display_7003b::initDisplay(void)
 {
 
 
-    resetpin[10].reset();
+    resetPin.reset();
     for (int i = 0; i< 500000; i++)
         {
             __NOP();
         }
-    resetpin[10].set();
+    resetPin.set();
     for (int i = 0; i< 500000; i++)
         {
             __NOP();
@@ -353,6 +353,97 @@ void display_7003b::horizontal_scroll(void)
     sendcommand(1);
 }
 
+void display_7003b::define_user_window(uint8_t window_num, uint16_t left, uint16_t top, uint16_t x_size, uint16_t y_size)
+{
+    sendcommand(0x1f);
+    sendcommand(0x28);
+    sendcommand(0x77);
+    sendcommand(0x02);
+
+    sendcommand(window_num);
+
+    sendcommand(0x01); //1 define,  cancel
+
+    sendcommand(uint8_t(left));      //lower byte
+    sendcommand(uint8_t(left >> 8)); //upper byte
+
+    sendcommand(uint8_t(top));      //lower byte
+    sendcommand(uint8_t(top >> 8)); //upper byte
+
+    sendcommand(uint8_t(x_size));      //lower byte
+    sendcommand(uint8_t(x_size >> 8)); //upper byte
+
+    sendcommand(uint8_t(y_size));      //lower byte
+    sendcommand(uint8_t(y_size >> 8)); //upper byte
+
+}
+
+void display_7003b::select_user_window(uint8_t window_num)
+{
+    sendcommand(0x1f);
+    sendcommand(0x28);
+    sendcommand(0x77);
+    sendcommand(0x01);
+    sendcommand(window_num);
+
+}
+
+/**
+ * (Cursor Set)
+ * @param x_pos
+ * @param y_pos
+ */
+void display_7003b::cursor_set(uint16_t x_pos, uint16_t y_pos)
+{
+    sendcommand(0x1f);
+    sendcommand(0x24);
+    sendcommand((uint8_t)x_pos);       //lower byte
+    sendcommand((uint8_t)x_pos>>8);    //upper byte
+    sendcommand((uint8_t)(y_pos/8));   //lower byte
+    sendcommand((uint8_t)(y_pos/8)>>8);//upper byte
+
+}
+
+/**
+ * (Real-time bit image display)
+ * @param character
+ * @param Font
+ */
+void display_7003b::draw_own_char(char character, const tFont *Font)
+{
+    uint16_t fontindex = character - 32;
+    sendcommand(0x1f);
+    sendcommand(0x28);
+    sendcommand(0x66);
+    sendcommand(0x11);
+
+    sendcommand((uint8_t)(Font->chars[fontindex].image->width)); //lower byte
+    sendcommand((uint8_t)(Font->chars[fontindex].image->width >> 8)); //lower byte
+
+    sendcommand((uint8_t)((Font->chars[fontindex].image->height/8))); //lower byte
+    sendcommand((uint8_t)((Font->chars[fontindex].image->height/8) >> 8)); //lower byte
+
+    sendcommand(0x01);
+
+    for (uint16_t i = 0; i< Font->chars[fontindex].image->width*2; i++)
+        {
+            sendcommand(Font->chars[fontindex].image->data[i]);
+        }
+    cursor_set(Font->chars[fontindex].image->width, 8);
+}
+
+void display_7003b::draw_own_string(char *string, const tFont *Font)
+{
+    while(*string != 0)
+        {
+            draw_own_char(*string, Font);
+            string++;
+        }
+}
+
+/**
+ * (Real-time bit image display)
+ */
 void display_7003b::bitmap(void)
 {
     //set all screen mode
