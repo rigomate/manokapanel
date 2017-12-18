@@ -22,11 +22,12 @@ public:
            Timer3GpioFeature<TIMER_REMAP_NONE, TIM3_CH2_OUT>
     >timer3_2;
 */
+    /*
     Timer3<TimerChannel3Feature<>,
            Timer3InternalClockFeature,
            Timer3GpioFeature<TIMER_REMAP_NONE, TIM3_CH3_OUT>
     >timer3_3;
-
+*/
     Timer3<TimerChannel4Feature<>,
            Timer3InternalClockFeature,
            Timer3GpioFeature<TIMER_REMAP_NONE, TIM3_CH4_OUT>
@@ -42,9 +43,10 @@ public:
            Timer2GpioFeature<TIMER_REMAP_FULL, TIM2_CH1_OUT>
     >timer2_1;
 */
+    /*
     Timer2<TimerChannel2Feature<>,
            Timer2InternalClockFeature,
            Timer2GpioFeature<TIMER_REMAP_FULL, TIM2_CH2_OUT>
     >timer2_2;
-
+*/
 };

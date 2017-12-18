@@ -19,9 +19,11 @@ pwm::pwm()
     timer2_1.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
     timer2_1.enablePeripheral();
 */
+    /*
     timer2_2.setTimeBaseByFrequency(100000, 255);
     timer2_2.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
     timer2_2.enablePeripheral();
+    */
 /*
     timer3_2.setTimeBaseByFrequency(100000, 255);
     timer3_2.initCompareForPwmOutput(0, TIM_OCMode_PWM1, TIM_OCPolarity_Low);
@@ -47,7 +49,7 @@ void pwm::setpwm(uint8_t channel, uint8_t dutyratio)
             //timer2_1.setDutyCycle(dutyratio);
             break;
         case 22:
-            timer2_2.setDutyCycle(dutyratio);
+            //timer2_2.setDutyCycle(dutyratio);
             break;
         case 32:
             //timer3_2.setDutyCycle(dutyratio);

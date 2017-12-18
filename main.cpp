@@ -144,9 +144,9 @@ static void prvDisplayTask( void *pvParameters )
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
     AutoRepeatPushButton button(pb[8],true,999999,150);
     AutoRepeatPushButton button_counter(pb[5],true,5000,150);
-    GpioB<DefaultDigitalOutputFeature<3> > pb_out;
-    pwm pwmc;
 
+    pwm pwmc;
+    GpioB<DefaultDigitalOutputFeature<3> > pb_out;
 
     char asciistring[10];
     uint16_t display_counter = 0;
