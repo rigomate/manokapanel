@@ -37,6 +37,9 @@ struct UsartSetup {
 
 #define busyPin busypin[12]
 #define resetPin resetpin[10]
+
+
+
 class display_7003b {
 
 public:
@@ -55,12 +58,13 @@ public:
     void cursor_set(uint16_t x_pos, uint16_t y_pos);
     void draw_own_char(char character, const tFont *Font);
     void draw_own_string(char *string, const tFont *Font);
-
     //Constructor
     display_7003b();
 
     //Destructor
     ~display_7003b();
+protected:
+    virtual uint8_t getwindow_id(void);
 
 private:
     void initDisplay(void);
@@ -69,11 +73,24 @@ private:
     /*These will be created by the constructor, but access is required elsewhere also
      * So we create define a pointer in the class body
      */
+    uint8_t window_id = 0;
     Usart1_Custom<UsartSetup> *usart;
-    UsartPollingOutputStream *outputStream;
+    static UsartPollingOutputStream *outputStream;
 
 
     GpioA<DefaultDigitalOutputFeature<10> > resetpin;
     GpioA<DefaultDigitalInputFeature<12> > busypin;
 
+};
+
+class display_7003b_user_window: public display_7003b{
+public:
+    display_7003b_user_window(uint8_t w_id = 1);
+
+    void activate(void);
+
+protected:
+    uint8_t getwindow_id(void) override;
+private:
+    uint8_t window_id;
 };

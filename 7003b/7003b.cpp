@@ -266,7 +266,11 @@ static const uint8_t image_data_viragok_kis[1024] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-
+/**
+ * Some magic has to be done to access this static class member, see:
+ * https://stackoverflow.com/questions/24970540/undefined-reference-during-linkage-for-a-static-pointer-class-member-in-c
+ */
+UsartPollingOutputStream *display_7003b::outputStream = NULL;
 /* sends a command to the display */
 void display_7003b::sendcommand(uint8_t byte)
 {
@@ -297,6 +301,7 @@ void display_7003b::initDisplay(void)
 
 void display_7003b::screensaver(void)
 {
+    select_user_window(getwindow_id());
     //Function 40h Screen Saver
     sendcommand(0x1f);
     sendcommand(0x28);
@@ -309,11 +314,13 @@ void display_7003b::screensaver(void)
 
 void display_7003b::clear(void)
 {
+    select_user_window(getwindow_id());
     sendcommand(0x0c);
 }
 
 void display_7003b::character(char *character)
 {
+    select_user_window(getwindow_id());
     while (*character != 0)
         {
             sendcommand(*character);
@@ -338,6 +345,7 @@ void display_7003b::horizontal_scroll(void)
     };
 */
 #endif
+    select_user_window(getwindow_id());
     sendcommand(0x1f);
     sendcommand(0x28);
     sendcommand(0x61);
@@ -395,6 +403,7 @@ void display_7003b::select_user_window(uint8_t window_num)
  */
 void display_7003b::cursor_set(uint16_t x_pos, uint16_t y_pos)
 {
+    select_user_window(getwindow_id());
     sendcommand(0x1f);
     sendcommand(0x24);
     sendcommand((uint8_t)x_pos);       //lower byte
@@ -412,6 +421,7 @@ void display_7003b::cursor_set(uint16_t x_pos, uint16_t y_pos)
 void display_7003b::draw_own_char(char character, const tFont *Font)
 {
     uint16_t fontindex = character - 32;
+    select_user_window(getwindow_id());
     sendcommand(0x1f);
     sendcommand(0x28);
     sendcommand(0x66);
@@ -434,6 +444,7 @@ void display_7003b::draw_own_char(char character, const tFont *Font)
 
 void display_7003b::draw_own_string(char *string, const tFont *Font)
 {
+    select_user_window(window_id);
     while(*string != 0)
         {
             draw_own_char(*string, Font);
@@ -441,11 +452,17 @@ void display_7003b::draw_own_string(char *string, const tFont *Font)
         }
 }
 
+uint8_t display_7003b::getwindow_id(void)
+{
+    return window_id;
+}
+
 /**
  * (Real-time bit image display)
  */
 void display_7003b::bitmap(void)
 {
+    select_user_window(getwindow_id());
     //set all screen mode
     sendcommand(0x1f);
     sendcommand(0x28);
@@ -473,8 +490,7 @@ void display_7003b::bitmap(void)
         }
 }
 
-//Constructor
-display_7003b::display_7003b()
+void display_7003b::init(void)
 {
     UsartPeripheral<UsartSetup,PERIPHERAL_USART1>::Parameters usartparams;
     usartparams.usart_baudRate = 115200;
@@ -486,8 +502,10 @@ display_7003b::display_7003b()
 
     initDisplay();
 
-    /* Send some example stuff */
-    //sendstring("Rigo Lilien");
+}
+//Constructor
+display_7003b::display_7003b()
+{
 }
 
 //Destructor
@@ -498,5 +516,18 @@ display_7003b::~display_7003b()
 
 void display_7003b::sendstring(char *text)
 {
+    select_user_window(getwindow_id());
     outputStream->write(text,strlen(text));
+}
+
+
+display_7003b_user_window::display_7003b_user_window(uint8_t w_id)
+{
+    window_id = w_id;
+    define_user_window(window_id, 35, 0, 56, 4);
+}
+
+uint8_t display_7003b_user_window::getwindow_id()
+{
+    return window_id;
 }

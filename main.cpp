@@ -141,6 +141,10 @@ static void prvDisplayTask( void *pvParameters )
 {
 
     display_7003b display;
+    display.init();
+
+    display_7003b_user_window user_window;
+
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
     AutoRepeatPushButton button(pb[8],true,999999,150);
     AutoRepeatPushButton button_counter(pb[5],true,5000,150);
@@ -153,7 +157,8 @@ static void prvDisplayTask( void *pvParameters )
 
     //pb_out.setAll();
 
-    display.define_user_window(1, 35, 0, 56, 4);
+
+    //display.define_user_window(1, 35, 0, 56, 4);
     display.select_user_window(0);
     display.bitmap();
     display.horizontal_scroll();
@@ -169,12 +174,15 @@ static void prvDisplayTask( void *pvParameters )
 
         if (button_counter.getState() == PushButton::Pressed)
             {
-                display.select_user_window(1);
-                display.clear();
-                display.cursor_set(0, 8);
+                //display.select_user_window(1);
+                //display.clear();
+                //display.cursor_set(0, 8);
+                user_window.clear();
+                user_window.cursor_set(0,8);
                 snprintf(asciistring,9, "%d", display_counter++);
                 //display.character(asciistring);
-                display.draw_own_string(asciistring, &ManoFont);
+                //display.draw_own_string(asciistring, &ManoFont);
+                user_window.draw_own_string(asciistring, &ManoFont);
             }
 
         if(pb[8].read())
