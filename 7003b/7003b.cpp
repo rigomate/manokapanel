@@ -316,6 +316,8 @@ void display_7003b::clear(void)
 {
     select_user_window(getwindow_id());
     sendcommand(0x0c);
+
+    set_cursor_pos_x(0);
 }
 
 void display_7003b::character(char *character)
@@ -411,6 +413,7 @@ void display_7003b::cursor_set(uint16_t x_pos, uint16_t y_pos)
     sendcommand((uint8_t)(y_pos/8));   //lower byte
     sendcommand((uint8_t)(y_pos/8)>>8);//upper byte
 
+    set_cursor_pos_x(x_pos);
 }
 
 /**
@@ -421,6 +424,7 @@ void display_7003b::cursor_set(uint16_t x_pos, uint16_t y_pos)
 void display_7003b::draw_own_char(char character, const tFont *Font)
 {
     uint16_t fontindex = character - 32;
+    uint16_t cursor_x;
     select_user_window(getwindow_id());
     sendcommand(0x1f);
     sendcommand(0x28);
@@ -439,7 +443,9 @@ void display_7003b::draw_own_char(char character, const tFont *Font)
         {
             sendcommand(Font->chars[fontindex].image->data[i]);
         }
-    cursor_set(Font->chars[fontindex].image->width, 8);
+
+    cursor_x = get_cursor_pos_x() + Font->chars[fontindex].image->width;
+    cursor_set(cursor_x, 8);
 }
 
 void display_7003b::draw_own_string(char *string, const tFont *Font)
@@ -455,6 +461,16 @@ void display_7003b::draw_own_string(char *string, const tFont *Font)
 uint8_t display_7003b::getwindow_id(void)
 {
     return window_id;
+}
+
+uint16_t display_7003b::get_cursor_pos_x(void)
+{
+    return cursor_pos_x;
+}
+
+void display_7003b::set_cursor_pos_x(uint16_t cursor_pos)
+{
+    cursor_pos_x = cursor_pos;
 }
 
 /**
@@ -506,6 +522,7 @@ void display_7003b::init(void)
 //Constructor
 display_7003b::display_7003b()
 {
+    cursor_pos_x = 0;
 }
 
 //Destructor
@@ -524,10 +541,21 @@ void display_7003b::sendstring(char *text)
 display_7003b_user_window::display_7003b_user_window(uint8_t w_id)
 {
     window_id = w_id;
+    cursor_pos_x = 0;
     define_user_window(window_id, 35, 0, 56, 4);
 }
 
 uint8_t display_7003b_user_window::getwindow_id()
 {
     return window_id;
+}
+
+uint16_t display_7003b_user_window::get_cursor_pos_x(void)
+{
+    return cursor_pos_x;
+}
+
+void display_7003b_user_window::set_cursor_pos_x(uint16_t cursor_pos)
+{
+    cursor_pos_x = cursor_pos;
 }

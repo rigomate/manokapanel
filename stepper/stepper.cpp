@@ -8,15 +8,20 @@
 
 #include "stepper.h"
 
-stepper_drv8806::stepper_drv8806()
+stepper_drv8806::stepper_drv8806(uint32_t maxruntimems)
 {
     MySender::Parameters senderParams;
     senderParams.spi_mode=SPI_Mode_Master;
 
     sender = new MySender(senderParams);
 
+    MaxRunTimeMs = maxruntimems;
+    //for overheat protection
+    MillisecondTimer::initialise();
+
+    overheatprotectionactive = false;
+    isEnabled = false;
     init_driver();
-    isEnabled = true;
 }
 
 stepper_drv8806::~stepper_drv8806()
@@ -57,11 +62,12 @@ void stepper_drv8806::init_driver()
     StepperResetLatch[12].reset();
 
     StepperStep(currentStepPos);
+    Enable();
 }
 
 void stepper_drv8806::StepperStep(uint8_t StepPos)
 {
-    //MillisecondTimer::initialise();
+
 
     //Send Data
     sender->send(StepPos);
@@ -85,14 +91,26 @@ void stepper_drv8806::Disable(void)
         {
             StepperEnablePin[13].set();
             isEnabled = false;
+            overheatprotectionactive = false;
         }
 }
 
 void stepper_drv8806::Enable(void)
 {
+    static uint32_t now;
+
     if (!isEnabled)
         {
+            now = MillisecondTimer::millis();
             StepperEnablePin[13].reset();
             isEnabled = true;
         }
+    if (MillisecondTimer::hasTimedOut(now, MaxRunTimeMs))
+    {
+        overheatprotectionactive = true;
+    }
+    if (overheatprotectionactive)
+    {
+        StepperEnablePin[13].set();
+    }
 }

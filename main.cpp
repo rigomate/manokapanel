@@ -55,7 +55,7 @@ static void prvStepperTask( void *pvParameters )
 {
 
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4> > pb;
-    stepper_drv8806 stepper;
+    stepper_drv8806 stepper(1000 * 60 * 25);
 
     uint16_t poti;
     //static int16_t delay;
@@ -180,6 +180,10 @@ static void prvDisplayTask( void *pvParameters )
                 user_window.clear();
                 user_window.cursor_set(0,8);
                 snprintf(asciistring,9, "%d", display_counter++);
+                if (display_counter > 99999)
+                {
+                    display_counter = 0;
+                }
                 //display.character(asciistring);
                 //display.draw_own_string(asciistring, &ManoFont);
                 user_window.draw_own_string(asciistring, &ManoFont);

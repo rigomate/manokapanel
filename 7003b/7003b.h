@@ -65,6 +65,8 @@ public:
     ~display_7003b();
 protected:
     virtual uint8_t getwindow_id(void);
+    virtual uint16_t get_cursor_pos_x(void);
+    virtual void set_cursor_pos_x(uint16_t cursor_pos);
 
 private:
     void initDisplay(void);
@@ -74,6 +76,7 @@ private:
      * So we create define a pointer in the class body
      */
     uint8_t window_id = 0;
+    uint16_t cursor_pos_x;
     Usart1_Custom<UsartSetup> *usart;
     static UsartPollingOutputStream *outputStream;
 
@@ -91,6 +94,9 @@ public:
 
 protected:
     uint8_t getwindow_id(void) override;
+    uint16_t get_cursor_pos_x(void) override;
+    void set_cursor_pos_x(uint16_t cursor_pos) override;
 private:
     uint8_t window_id;
+    uint16_t cursor_pos_x;
 };

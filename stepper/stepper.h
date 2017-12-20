@@ -30,7 +30,7 @@ class stepper_drv8806
 
 public:
     //Constructor
-    stepper_drv8806();
+    stepper_drv8806(uint32_t maxruntimems = 5000);
 
     //Destructor
     ~stepper_drv8806();
@@ -57,4 +57,7 @@ private:
     GpioC<DefaultDigitalOutputFeature<13> > StepperEnablePin;
     GpioC<DefaultDigitalOutputFeature<15> > StepperResetPin;
     GpioB<DefaultDigitalOutputFeature<12> > StepperResetLatch;
+
+    uint32_t MaxRunTimeMs;
+    bool overheatprotectionactive;
 };
