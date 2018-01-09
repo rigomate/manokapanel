@@ -519,12 +519,6 @@ void display_7003b::init(void)
     initDisplay();
 
 }
-//Constructor
-display_7003b::display_7003b()
-{
-    cursor_pos_x = 0;
-}
-
 //Destructor
 display_7003b::~display_7003b()
 {
@@ -537,25 +531,3 @@ void display_7003b::sendstring(char *text)
     outputStream->write(text,strlen(text));
 }
 
-
-display_7003b_user_window::display_7003b_user_window(uint8_t w_id)
-{
-    window_id = w_id;
-    cursor_pos_x = 0;
-    define_user_window(window_id, 35, 0, 56, 4);
-}
-
-uint8_t display_7003b_user_window::getwindow_id()
-{
-    return window_id;
-}
-
-uint16_t display_7003b_user_window::get_cursor_pos_x(void)
-{
-    return cursor_pos_x;
-}
-
-void display_7003b_user_window::set_cursor_pos_x(uint16_t cursor_pos)
-{
-    cursor_pos_x = cursor_pos;
-}

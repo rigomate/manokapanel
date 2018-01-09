@@ -37,7 +37,7 @@ private:
                    Timer2GpioFeature<TIMER_REMAP_FULL, TIM2_CH4_OUT>
                   > timer2;
 
-    void writedata(uint8_t *data, uint32_t len);
+    void writedata(uint16_t *data, uint32_t len);
     /*
     Dma1Channel7<
       TimerDmaFeature<

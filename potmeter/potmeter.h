@@ -9,6 +9,7 @@
 #include "config/adc.h"
 #include "config/dma.h"
 
+
 #include <stdbool.h>
 #include <vector>
 
@@ -39,4 +40,5 @@ private:
     //uint16_t readBuffer[7];
     //size_t size = 10;
     std::vector<uint16_t> readBuffer;
+    //std::array<uint16_t, 10> readBuffer2;
 };

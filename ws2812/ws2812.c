@@ -1,7 +1,7 @@
 #include "ws2812.h"
 
 /* Variables -----------------------------------------------*/
-uint8_t LEDbuffer[LED_BUFFER_SIZE];
+uint16_t LEDbuffer[LED_BUFFER_SIZE];
 
 /* Functions -----------------------------------------------*/
 
@@ -14,7 +14,7 @@ void ws2812_update(void) {
 }
 */
 
-uint8_t* setLEDcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE) {
+uint16_t* setLEDcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE) {
 	uint8_t tempBuffer[24];
 	uint32_t i;
 	uint32_t LEDindex;
@@ -45,7 +45,7 @@ void setWHOLEcolor(uint8_t RED, uint8_t GREEN, uint8_t BLUE) {
 		setLEDcolor(index, RED, GREEN, BLUE);
 }
 
-uint8_t* fillBufferBlack(void) {
+uint16_t* fillBufferBlack(void) {
 	/*Fill LED buffer - ALL OFF*/
 	uint32_t index, buffIndex;
 	buffIndex = 0;

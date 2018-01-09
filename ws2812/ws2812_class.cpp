@@ -14,7 +14,7 @@ extern "C" {
 
 ws2812::ws2812()
 {
-    uint8_t *buf;
+    uint16_t *buf;
 
     buf = fillBufferBlack();
     writedata(buf, LED_BUFFER_SIZE);
@@ -34,13 +34,13 @@ ws2812::~ws2812()
 
 void ws2812::setcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE)
 {
-    uint8_t *buf;
+    uint16_t *buf;
 
     buf = setLEDcolor(LEDnumber, RED, GREEN, BLUE);
 
     writedata(buf, LED_BUFFER_SIZE);
 }
-void ws2812::writedata(uint8_t *data, uint32_t len)
+void ws2812::writedata(uint16_t *data, uint32_t len)
 {
     timerdma.beginWriteByTimer(timer2, data, len);
 }

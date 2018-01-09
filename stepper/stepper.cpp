@@ -17,7 +17,7 @@ stepper_drv8806::stepper_drv8806(uint32_t maxruntimems)
 
     MaxRunTimeMs = maxruntimems;
     //for overheat protection
-    MillisecondTimer::initialise();
+    MillisecondTimerMano::initialise();
 
     overheatprotectionactive = false;
     isEnabled = false;
@@ -39,6 +39,11 @@ void stepper_drv8806::stepPositive()
     StepperStep(StepTable[currentStepPos]);
 }
 
+void stepper_drv8806::operator++()
+        {
+            stepPositive();
+        }
+
 void stepper_drv8806::stepNegative()
 {
     currentStepPos--;
@@ -48,6 +53,12 @@ void stepper_drv8806::stepNegative()
         }
     StepperStep(StepTable[currentStepPos]);
 }
+
+void stepper_drv8806::operator--()
+        {
+            stepNegative();
+        }
+
 
 void stepper_drv8806::init_driver()
 {
@@ -101,11 +112,11 @@ void stepper_drv8806::Enable(void)
 
     if (!isEnabled)
         {
-            now = MillisecondTimer::millis();
+            now = MillisecondTimerMano::millis();
             StepperEnablePin[13].reset();
             isEnabled = true;
         }
-    if (MillisecondTimer::hasTimedOut(now, MaxRunTimeMs))
+    if (MillisecondTimerMano::hasTimedOut(now, MaxRunTimeMs))
     {
         overheatprotectionactive = true;
     }

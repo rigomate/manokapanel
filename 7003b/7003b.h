@@ -59,14 +59,17 @@ public:
     void draw_own_char(char character, const tFont *Font);
     void draw_own_string(char *string, const tFont *Font);
     //Constructor
-    display_7003b();
+    display_7003b(uint8_t id = 0) : window_id(id), cursor_pos_x(0){}
 
     //Destructor
     ~display_7003b();
 protected:
-    virtual uint8_t getwindow_id(void);
-    virtual uint16_t get_cursor_pos_x(void);
-    virtual void set_cursor_pos_x(uint16_t cursor_pos);
+    uint8_t window_id = 0;
+    uint16_t cursor_pos_x;
+
+    uint8_t getwindow_id(void);
+    uint16_t get_cursor_pos_x(void);
+    void set_cursor_pos_x(uint16_t cursor_pos);
 
 private:
     void initDisplay(void);
@@ -75,8 +78,7 @@ private:
     /*These will be created by the constructor, but access is required elsewhere also
      * So we create define a pointer in the class body
      */
-    uint8_t window_id = 0;
-    uint16_t cursor_pos_x;
+
     Usart1_Custom<UsartSetup> *usart;
     static UsartPollingOutputStream *outputStream;
 
@@ -88,15 +90,12 @@ private:
 
 class display_7003b_user_window: public display_7003b{
 public:
-    display_7003b_user_window(uint8_t w_id = 1);
+    display_7003b_user_window(uint8_t id = 1) : display_7003b(id){define_user_window(window_id, 35, 0, 56, 4);}
 
     void activate(void);
 
 protected:
-    uint8_t getwindow_id(void) override;
-    uint16_t get_cursor_pos_x(void) override;
-    void set_cursor_pos_x(uint16_t cursor_pos) override;
+
 private:
-    uint8_t window_id;
-    uint16_t cursor_pos_x;
 };
+

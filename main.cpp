@@ -115,11 +115,11 @@ static void prvStepperTask( void *pvParameters )
             delaycounter = 0;
             if (delay > 0)
                 {
-                    stepper.stepNegative();
+                    --stepper;
                 }
             else
                 {
-                    stepper.stepPositive();
+                    ++stepper;
                 }
         }
 
@@ -153,7 +153,7 @@ static void prvDisplayTask( void *pvParameters )
     GpioB<DefaultDigitalOutputFeature<3> > pb_out;
 
     char asciistring[10];
-    uint16_t display_counter = 0;
+    uint32_t display_counter = 0;
 
     //pb_out.setAll();
 

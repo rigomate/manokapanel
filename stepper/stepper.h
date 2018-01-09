@@ -7,6 +7,7 @@
 
 #include "config/stm32plus.h"
 #include "config/spi.h"
+#include "timer/manotimer.h"
 
 using namespace stm32plus;
 
@@ -36,7 +37,9 @@ public:
     ~stepper_drv8806();
 
     void stepPositive(void);
+    void operator++();
     void stepNegative(void);
+    void operator--();
     void Disable(void);
     void Enable(void);
 
@@ -51,7 +54,7 @@ private:
     MySender *sender;
     bool isEnabled;
 
-    uint8_t StepTable[8] = {1,3,2,6,4,12,8,9};
+    const uint8_t StepTable[8] = {1,3,2,6,4,12,8,9};
 
     //GpioC<DefaultDigitalOutputFeature<10> > resetpin;
     GpioC<DefaultDigitalOutputFeature<13> > StepperEnablePin;

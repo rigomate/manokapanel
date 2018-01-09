@@ -40,9 +40,9 @@
 #define WS2812_RESET            (0)
 
 
-uint8_t* setLEDcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE);
+uint16_t* setLEDcolor(uint32_t LEDnumber, uint8_t RED, uint8_t GREEN, uint8_t BLUE);
 void setWHOLEcolor(uint8_t RED, uint8_t GREEN, uint8_t BLUE);
-uint8_t* fillBufferBlack(void);
+uint16_t* fillBufferBlack(void);
 void fillBufferWhite(void);
 //void TIMx_DMA_IRQHandler(void);
 
