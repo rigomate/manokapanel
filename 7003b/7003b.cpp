@@ -476,6 +476,7 @@ void display_7003b::set_cursor_pos_x(uint16_t cursor_pos)
 /**
  * (Real-time bit image display)
  */
+extern volatile uint8_t videoRAM[512];
 void display_7003b::bitmap(void)
 {
     select_user_window(getwindow_id());
@@ -500,9 +501,9 @@ void display_7003b::bitmap(void)
     sendcommand(1);
 
     //8 pixels are sent horizontically at once
-    for(int i = 0; i < 1024; i++)
+    for(int i = 0; i < 512; i++)
         {
-            sendcommand(image_data_viragok_kis[i]);
+            sendcommand(videoRAM[i]);
         }
 }
 

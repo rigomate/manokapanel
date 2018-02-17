@@ -61,10 +61,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.700291745" name="Cross ARM C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.804729116" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
+									<listOptionValue builtIn="false" value="OS_SUPPORT"/>
 									<listOptionValue builtIn="false" value="STM32PLUS_F1_MD"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2098117847" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/STemWinLibrary532/Config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/STemWinLibrary532/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/portable/GCC/ARM_CM3}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/conf}&quot;"/>
@@ -77,6 +81,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.816592205" name="Cross ARM C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1612175082" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="STM32PLUS_F1_MD"/>
+									<listOptionValue builtIn="false" value="OS_SUPPORT"/>
 									<listOptionValue builtIn="false" value="CPP_FREERTOS_NO_CPP_STRINGS"/>
 									<listOptionValue builtIn="false" value="CPP_FREERTOS_NO_EXCEPTIONS"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
@@ -87,6 +92,9 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std.1659158818" name="Language standard" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.std.gnucpp14" valueType="enumerated"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1139795553" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus}&quot;"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/config}"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/STemWinLibrary532/Config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/STemWinLibrary532/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/portable/GCC/ARM_CM3}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/freertos-addons/c++/Source/include}&quot;"/>
@@ -110,9 +118,11 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.other.904774563" name="Other linker flags" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.other" useByScannerDiscovery="false" value="-Wl,-wrap,__aeabi_unwind_cpp_pr0 -Wl,-wrap,__aeabi_unwind_cpp_pr1 -Wl,-wrap,__aeabi_unwind_cpp_pr2" valueType="string"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.paths.1839363532" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/stm32plus/Debug_f1md_72_8}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/stemwin/STemWinLibrary532/Lib}&quot;"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.libs.1471428587" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="stm32plus"/>
+									<listOptionValue builtIn="false" value=":STemWin532_CM3_OS_GCC.a"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input.283611062" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -135,7 +145,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="freertos-addons/c++/Source/cworkqueue.cpp|freertos-addons/c++/Source/ctimer.cpp|freertos-addons/c++/Source/ctickhook.cpp|freertos-addons/c++/Source/cthread.cpp|freertos-addons/c++/Source/ctasklet.cpp|freertos-addons/c++/Source/csemaphore.cpp|freertos-addons/c++/Source/cread_write_lock.cpp|freertos-addons/c++/Source/cqueue.cpp|freertos-addons/c++/Source/cmutex.cpp|freertos-addons/c++/Source/cmem_pool.cpp|ws2812/stripEffects.c|system/f042_48_8|system/f030_48_8|system/f030|system/f1md|system/f051_48_8|system/f1hd_72_8|system/f107_72_8|system/f407_168_8" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="config/lcdconf.c|freertos-addons/c++/Source/cworkqueue.cpp|freertos-addons/c++/Source/ctimer.cpp|freertos-addons/c++/Source/ctickhook.cpp|freertos-addons/c++/Source/cthread.cpp|freertos-addons/c++/Source/ctasklet.cpp|freertos-addons/c++/Source/csemaphore.cpp|freertos-addons/c++/Source/cread_write_lock.cpp|freertos-addons/c++/Source/cqueue.cpp|freertos-addons/c++/Source/cmutex.cpp|freertos-addons/c++/Source/cmem_pool.cpp|ws2812/stripEffects.c|system/f042_48_8|system/f030_48_8|system/f030|system/f1md|system/f051_48_8|system/f1hd_72_8|system/f107_72_8|system/f407_168_8" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

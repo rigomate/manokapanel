@@ -19,6 +19,7 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "GUI.h"
 }
 
 uint16_t color1;
@@ -137,9 +138,11 @@ static void prvStepperTask( void *pvParameters )
     }
 }
 
+extern GUI_CONST_STORAGE GUI_BITMAP bmvirag;
 static void prvDisplayTask( void *pvParameters )
 {
 
+#if 0
     display_7003b display;
     display.init();
 
@@ -207,6 +210,32 @@ static void prvDisplayTask( void *pvParameters )
             {
                 pwmc.setpwm(34, 100);
             }
+
+        vTaskDelay(5 / portTICK_RATE_MS);
+    }
+#endif
+
+    display_7003b display;
+    display.init();
+
+    display_7003b_user_window user_window;
+
+    display.select_user_window(0);
+
+
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
+    GUI_Init();
+    GUI_SetOrientation(GUI_SWAP_XY);
+    //GUI_DispString("Hello world!");
+    //GUI_FillRect(0,0,127,31);
+    //GUI_InvertRect(0,0,128,32);
+    //GUI_DispString("Hello world!");
+    //GUI_DrawLine(0,0,0,127);
+    GUI_DrawBitmap(&bmvirag, 0,0);
+    display.bitmap();
+    for(;;)
+    {
+
 
         vTaskDelay(5 / portTICK_RATE_MS);
     }
@@ -390,9 +419,9 @@ int main() {
   //test.horizontal_scroll();
 
   xTaskCreate( prvDisplayTask, "Display", 512, NULL, 1, NULL );
-  xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 9, NULL );
-  xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
-  xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+  //xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 9, NULL );
+  //xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
+  //xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
 
   /* Start the scheduler. */
     vTaskStartScheduler();
