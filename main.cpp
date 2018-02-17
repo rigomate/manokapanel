@@ -231,15 +231,73 @@ static void prvDisplayTask( void *pvParameters )
     //GUI_InvertRect(0,0,128,32);
     //GUI_DispString("Hello world!");
     //GUI_DrawLine(0,0,0,127);
-    GUI_DrawBitmap(&bmvirag, 0,0);
+    //GUI_DrawBitmap(&bmvirag, 0,0);
     display.bitmap();
+
+    int xPos;
+    int yPos;
+    int xSize;
+    int i = 0;
     for(;;)
     {
-
+        xPos = LCD_GetXSize() / 2;
+        yPos = LCD_GetYSize() / 3;
+        GUI_SetTextMode(GUI_TM_REV);
+        GUI_SetFont(GUI_FONT_20F_ASCII);
+        //GUI_DispStringHCenterAt("Hello world!", xPos, yPos);
+        display.bitmap();
+        //GUI_SetFont(GUI_FONT_D24X32);
+        xSize = GUI_GetStringDistX("0000");
+        xPos -= xSize / 2;
+        yPos += 24 + 10;
+        while (1) {
+            GUI_Clear();
+          GUI_DispDecAt( i++, 0, 0, 4);
+          display.bitmap();
+          if (i > 9999) {
+            i = 0;
+          }
+        }
 
         vTaskDelay(5 / portTICK_RATE_MS);
     }
 }
+
+#define RECOMMENDED_MEMORY (102L * 5)
+
+static void emwinTask( void *pvParameters ) {
+  int xPos;
+  int yPos;
+  int xSize;
+  int i;
+
+  i = 0;
+
+  //
+  // Check if recommended memory for the sample is available
+  //
+  if (GUI_ALLOC_GetNumFreeBytes() < RECOMMENDED_MEMORY) {
+    GUI_ErrorOut("Not enough memory available.");
+    //return;
+  }
+  xPos = LCD_GetXSize() / 2;
+  yPos = LCD_GetYSize() / 3;
+  //GUI_SetTextMode(GUI_TM_REV);
+  //GUI_SetFont(GUI_FONT_20F_ASCII);
+  //GUI_DispStringHCenterAt("Hello world!", xPos, yPos);
+  GUI_DispString("Hello");
+  //GUI_SetFont(GUI_FONT_D24X32);
+  xSize = GUI_GetStringDistX("0000");
+  xPos -= xSize / 2;
+  yPos += 24 + 10;
+  while (1) {
+    GUI_DispDecAt( i++, xPos, yPos, 4);
+    if (i > 9999) {
+      i = 0;
+    }
+  }
+}
+
 static void prvLedTask( void *pvParameters )
 {
 
@@ -418,7 +476,8 @@ int main() {
   //test.bitmap();
   //test.horizontal_scroll();
 
-  xTaskCreate( prvDisplayTask, "Display", 512, NULL, 1, NULL );
+  xTaskCreate( prvDisplayTask, "Display", 512, NULL, 2, NULL );
+  //xTaskCreate( emwinTask, "emwin", 1024, NULL, 1, NULL );
   //xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 9, NULL );
   //xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
   //xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
