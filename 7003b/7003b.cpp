@@ -476,24 +476,28 @@ void display_7003b::set_cursor_pos_x(uint16_t cursor_pos)
 /**
  * (Real-time bit image display)
  */
-extern volatile uint8_t videoRAM[512];
+extern unsigned long Addr;
 void display_7003b::bitmap(void)
 {
+    if (Addr == 0) return;
+    uint8_t *datapointer = (uint8_t *)Addr;
     select_user_window(getwindow_id());
     //set all screen mode
+    /*
     sendcommand(0x1f);
     sendcommand(0x28);
     sendcommand(0x77);
     sendcommand(0x10);
     sendcommand(0x01);
+    */
 
     sendcommand(0x1f);
     sendcommand(0x28);
     sendcommand(0x66);
     sendcommand(0x11);
 
+    sendcommand(128);
     sendcommand(0);
-    sendcommand(1);
 
     sendcommand(32 / 8);
     sendcommand(0);
@@ -503,7 +507,7 @@ void display_7003b::bitmap(void)
     //8 pixels are sent horizontically at once
     for(int i = 0; i < 512; i++)
         {
-            sendcommand(videoRAM[i]);
+            sendcommand(datapointer[i]);
         }
 }
 

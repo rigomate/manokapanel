@@ -20,6 +20,7 @@ extern "C" {
 #include "task.h"
 #include "queue.h"
 #include "GUI.h"
+#include "semphr.h"
 }
 
 uint16_t color1;
@@ -139,6 +140,7 @@ static void prvStepperTask( void *pvParameters )
 }
 
 extern GUI_CONST_STORAGE GUI_BITMAP bmvirag;
+SemaphoreHandle_t xSemaphore = NULL;
 static void prvDisplayTask( void *pvParameters )
 {
 
@@ -215,6 +217,8 @@ static void prvDisplayTask( void *pvParameters )
     }
 #endif
 
+
+    xSemaphore = xSemaphoreCreateBinary();
     display_7003b display;
     display.init();
 
@@ -223,78 +227,122 @@ static void prvDisplayTask( void *pvParameters )
     display.select_user_window(0);
 
 
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
-    GUI_Init();
-    GUI_SetOrientation(GUI_SWAP_XY);
+
     //GUI_DispString("Hello world!");
     //GUI_FillRect(0,0,127,31);
     //GUI_InvertRect(0,0,128,32);
     //GUI_DispString("Hello world!");
     //GUI_DrawLine(0,0,0,127);
     //GUI_DrawBitmap(&bmvirag, 0,0);
-    display.bitmap();
 
-    int xPos;
-    int yPos;
-    int xSize;
-    int i = 0;
+
     for(;;)
     {
-        xPos = LCD_GetXSize() / 2;
-        yPos = LCD_GetYSize() / 3;
-        GUI_SetTextMode(GUI_TM_REV);
-        GUI_SetFont(GUI_FONT_20F_ASCII);
-        //GUI_DispStringHCenterAt("Hello world!", xPos, yPos);
-        display.bitmap();
-        //GUI_SetFont(GUI_FONT_D24X32);
-        xSize = GUI_GetStringDistX("0000");
-        xPos -= xSize / 2;
-        yPos += 24 + 10;
-        while (1) {
-            GUI_Clear();
-          GUI_DispDecAt( i++, 0, 0, 4);
-          display.bitmap();
-          if (i > 9999) {
-            i = 0;
-          }
-        }
+        if( xSemaphoreTake( xSemaphore, portMAX_DELAY ) == pdTRUE )
+        {
+            /* It is time to execute. */
 
-        vTaskDelay(5 / portTICK_RATE_MS);
+            display.bitmap();
+
+            /* We have finished our task.  Return to the top of the loop where
+            we will block on the semaphore until it is time to execute
+            again.  Note when using the semaphore for synchronisation with an
+            ISR in this manner there is no need to 'give' the semaphore
+            back. */
+        }
     }
 }
 
 #define RECOMMENDED_MEMORY (102L * 5)
 
 static void emwinTask( void *pvParameters ) {
-  int xPos;
-  int yPos;
-  int xSize;
-  int i;
+  int xPos = 0;
+  uint32_t display_counter = 0;
+  bool doscroll = false;
 
-  i = 0;
+  GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
+  AutoRepeatPushButton button(pb[8],true,999999,150);
+  AutoRepeatPushButton button_counter(pb[5],true,5000,150);
 
-  //
-  // Check if recommended memory for the sample is available
-  //
-  if (GUI_ALLOC_GetNumFreeBytes() < RECOMMENDED_MEMORY) {
-    GUI_ErrorOut("Not enough memory available.");
-    //return;
-  }
-  xPos = LCD_GetXSize() / 2;
-  yPos = LCD_GetYSize() / 3;
-  //GUI_SetTextMode(GUI_TM_REV);
-  //GUI_SetFont(GUI_FONT_20F_ASCII);
+  pwm pwmc;
+  GpioB<DefaultDigitalOutputFeature<3> > pb_out;
+
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
+  GUI_Init();
+  GUI_SetOrientation(GUI_SWAP_XY);
+
+
+  GUI_SetTextMode(GUI_TM_REV);
+  GUI_SetFont(GUI_FONT_20F_ASCII);
   //GUI_DispStringHCenterAt("Hello world!", xPos, yPos);
-  GUI_DispString("Hello");
+  //GUI_DispString("Hello");
   //GUI_SetFont(GUI_FONT_D24X32);
-  xSize = GUI_GetStringDistX("0000");
-  xPos -= xSize / 2;
-  yPos += 24 + 10;
+
+  for (int i = 0; i < 128; i++)
+  {
+      GUI_MULTIBUF_Begin();
+      GUI_Clear();
+      GUI_DrawBitmap(&bmvirag, xPos--,0);
+      GUI_MULTIBUF_End();
+      vTaskDelay(5 / portTICK_RATE_MS);
+  }
+
+  GUI_MULTIBUF_Begin();
+  GUI_Clear();
+  GUI_SetTextAlign(GUI_TA_HCENTER | GUI_TA_VCENTER);
+  GUI_DispStringAt("Lili Panel", 128/2, 16);
+  GUI_MULTIBUF_End();
+
   while (1) {
-    GUI_DispDecAt( i++, xPos, yPos, 4);
-    if (i > 9999) {
-      i = 0;
-    }
+
+      if(button.getState()==PushButton::Pressed)
+          {
+              xPos = 0;
+              doscroll = true;
+          }
+
+      if (button_counter.getState() == PushButton::Pressed)
+          {
+              doscroll = false;
+              GUI_MULTIBUF_Begin();
+              GUI_Clear();
+              GUI_SetTextAlign(GUI_TA_HCENTER | GUI_TA_VCENTER);
+              GUI_DispDecAt(display_counter++, 128/2, 16, 8);
+              GUI_MULTIBUF_End();
+          }
+
+      if(pb[8].read())
+          {
+              pb_out[3].set();
+          }
+      else
+          {
+              pb_out[3].reset();
+          }
+
+
+      if(pb[5].read())
+          {
+              pwmc.setpwm(34, 0);
+          }
+      else
+          {
+              pwmc.setpwm(34, 100);
+          }
+
+      if (doscroll)
+      {
+          GUI_MULTIBUF_Begin();
+          GUI_Clear();
+          GUI_DrawBitmap(&bmvirag, xPos--,0);
+          GUI_MULTIBUF_End();
+          vTaskDelay(5 / portTICK_RATE_MS);
+          if(xPos < -128)
+          {
+              doscroll = false;
+          }
+      }
+    vTaskDelay(5 / portTICK_RATE_MS);
   }
 }
 
@@ -476,11 +524,11 @@ int main() {
   //test.bitmap();
   //test.horizontal_scroll();
 
-  xTaskCreate( prvDisplayTask, "Display", 512, NULL, 2, NULL );
-  //xTaskCreate( emwinTask, "emwin", 1024, NULL, 1, NULL );
-  //xTaskCreate( prvStepperTask, "Stepper", 512, NULL, 9, NULL );
-  //xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
-  //xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+  xTaskCreate( prvDisplayTask, "Display", 256, NULL, 2, NULL );
+  xTaskCreate( emwinTask, "emwin", 256, NULL, 1, NULL );
+  xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
+  xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
+  xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
 
   /* Start the scheduler. */
     vTaskStartScheduler();

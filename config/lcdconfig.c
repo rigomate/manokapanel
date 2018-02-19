@@ -16,6 +16,8 @@ Purpose     : Display controller configuration (single layer)
 #include <stdint.h>
 #include "GUI.h"
 #include "GUIDRV_Lin.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 /*********************************************************************
 *
@@ -28,6 +30,9 @@ Purpose     : Display controller configuration (single layer)
 //
 #define XSIZE_PHYS 128
 #define YSIZE_PHYS 32
+#define BITSPERPIXEL 1
+
+#define NUM_BUFFERS 2
 
 //
 // Color conversion
@@ -85,6 +90,10 @@ Purpose     : Display controller configuration (single layer)
 *
 **********************************************************************
 */
+
+volatile uint8_t videoRAM[((XSIZE_PHYS * YSIZE_PHYS) / 8 ) * NUM_BUFFERS];
+unsigned long Addr;
+
 /*********************************************************************
 *
 *       _InitController
@@ -181,7 +190,7 @@ static void _ReadMPixels(int LayerIndex, U16 * pBuffer, U32 NumPixels) {
 **********************************************************************
 */
 
-volatile uint8_t videoRAM[512];
+
 /*********************************************************************
 *
 *       LCD_X_Config
@@ -195,6 +204,9 @@ void LCD_X_Config(void) {
   GUI_DEVICE * pDevice;
   GUI_PORT_API PortAPI = {0};
   //CONFIG_FLEXCOLOR Config = {0};
+
+
+  GUI_MULTIBUF_Config(NUM_BUFFERS);
 
   //
   // Set display driver and color conversion for 1st layer
@@ -212,6 +224,7 @@ void LCD_X_Config(void) {
   }
 
   LCD_SetVRAMAddrEx(0, (void *)videoRAM);
+  Addr = videoRAM;
   //
   // Function selection, hardware routines (PortAPI) and operation mode (bus, bpp and cache)
   //
@@ -240,6 +253,28 @@ void LCD_X_Config(void) {
   //LCD_SetDevFunc(0, LCD_DEVFUNC_READMPIXELS, (void(*)(void))_ReadMPixels);
 }
 
+
+int _PendingBuffer;
+static void _ISR_EndOfFrame(void) {
+    unsigned long BufferSize;
+    if (_PendingBuffer >= 0) {
+    //
+    // Calculate address of the given buffer
+    //
+    BufferSize = (XSIZE_PHYS * YSIZE_PHYS * BITSPERPIXEL) / 8;
+    //Addr = videoRAM + BufferSize * pData->Index;
+    //
+    // Make the given buffer visible
+    //
+    //AT91C_LCDC_BA1 = Addr;
+    //
+    // Send a confirmation that the buffer is visible now
+    //
+    GUI_MULTIBUF_Confirm(_PendingBuffer);
+    _PendingBuffer = -1;
+    }
+}
+
 /*********************************************************************
 *
 *       LCD_X_DisplayDriver
@@ -256,8 +291,11 @@ void LCD_X_Config(void) {
 *   Cmd        - Please refer to the details in the switch statement below
 *   pData      - Pointer to a LCD_X_DATA structure
 */
+extern SemaphoreHandle_t xSemaphore;
 int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
   int r;
+  LCD_X_SHOWBUFFER_INFO * pbuffer;
+  unsigned long BufferSize;
 
   GUI_USE_PARA(LayerIndex);
   GUI_USE_PARA(pData);
@@ -275,6 +313,20 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
     _InitController();
     return 0;
   }
+  case LCD_X_SHOWBUFFER:
+      pbuffer = (LCD_X_SHOWBUFFER_INFO *)pData;
+      BufferSize = (XSIZE_PHYS * YSIZE_PHYS * BITSPERPIXEL) / 8;
+      Addr = videoRAM + BufferSize * pbuffer->Index;
+      //
+      // Remember buffer index to be used by ISR
+      //
+      if( xSemaphoreGive( xSemaphore ) != pdTRUE )
+      {
+          // We would not expect this call to fail because we must have
+          // obtained the semaphore to get here.
+      }
+      GUI_MULTIBUF_Confirm(pbuffer->Index);
+      break;
   default:
     r = -1;
   }
