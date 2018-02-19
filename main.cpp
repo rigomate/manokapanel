@@ -21,6 +21,7 @@ extern "C" {
 #include "queue.h"
 #include "GUI.h"
 #include "semphr.h"
+#include "SEGGER_SYSVIEW.h"
 }
 
 uint16_t color1;
@@ -219,6 +220,7 @@ static void prvDisplayTask( void *pvParameters )
 
 
     xSemaphore = xSemaphoreCreateBinary();
+    configASSERT(xSemaphore != NULL);
     display_7003b display;
     display.init();
 
@@ -259,6 +261,7 @@ static void emwinTask( void *pvParameters ) {
   int xPos = 0;
   uint32_t display_counter = 0;
   bool doscroll = false;
+  TickType_t xLastWakeTime;
 
   GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
   AutoRepeatPushButton button(pb[8],true,999999,150);
@@ -278,13 +281,20 @@ static void emwinTask( void *pvParameters ) {
   //GUI_DispString("Hello");
   //GUI_SetFont(GUI_FONT_D24X32);
 
+
+
+      // Initialise the xLastWakeTime variable with the current time.
+  xLastWakeTime = xTaskGetTickCount ();
+
+
+  xLastWakeTime = xTaskGetTickCount ();
   for (int i = 0; i < 128; i++)
   {
       GUI_MULTIBUF_Begin();
       GUI_Clear();
       GUI_DrawBitmap(&bmvirag, xPos--,0);
       GUI_MULTIBUF_End();
-      vTaskDelay(5 / portTICK_RATE_MS);
+      vTaskDelayUntil( &xLastWakeTime, 35 / portTICK_RATE_MS );
   }
 
   GUI_MULTIBUF_Begin();
@@ -330,13 +340,14 @@ static void emwinTask( void *pvParameters ) {
               pwmc.setpwm(34, 100);
           }
 
+      xLastWakeTime = xTaskGetTickCount ();
       if (doscroll)
       {
           GUI_MULTIBUF_Begin();
           GUI_Clear();
           GUI_DrawBitmap(&bmvirag, xPos--,0);
           GUI_MULTIBUF_End();
-          vTaskDelay(5 / portTICK_RATE_MS);
+          vTaskDelayUntil( &xLastWakeTime, 35 / portTICK_RATE_MS );
           if(xPos < -128)
           {
               doscroll = false;
@@ -457,10 +468,8 @@ static void prvPotiTask( void *pvParameters )
     for (int i = 0; i < 7; i++)
         {
             xQueuePoti[i] = xQueueCreate( 1, sizeof( uint16_t ) );
-            if (xQueuePoti[i] == NULL)
-            {
-                __NOP();
-            }
+
+                configASSERT(xQueuePoti[i] != NULL);
         }
 
     potmeter poti;
@@ -483,6 +492,7 @@ static void prvButtonTask( void *pvParameters )
     for (int i = 0; i < 7; i++)
         {
             xQueueButton[i] = xQueueCreate( 1, sizeof( uint16_t ) );
+            configASSERT(xQueueButton[i] != NULL);
         }
 
     potmeter poti;
@@ -505,6 +515,7 @@ uint32_t debugval;
 
 
 int main() {
+    BaseType_t taskcreatereturn;
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
     AFIO->MAPR = AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
 
@@ -523,12 +534,18 @@ int main() {
 
   //test.bitmap();
   //test.horizontal_scroll();
-
-  xTaskCreate( prvDisplayTask, "Display", 256, NULL, 2, NULL );
-  xTaskCreate( emwinTask, "emwin", 256, NULL, 1, NULL );
-  xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
-  xTaskCreate( prvLedTask, "Led", 512, NULL, 1, NULL );
-  xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+    SEGGER_SYSVIEW_Conf();
+    SEGGER_SYSVIEW_Start();
+    taskcreatereturn = xTaskCreate( prvDisplayTask, "Display", 256, NULL, 2, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( emwinTask, "emwin", 392, NULL, 1, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 1, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
 
   /* Start the scheduler. */
     vTaskStartScheduler();

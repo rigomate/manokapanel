@@ -2,7 +2,7 @@ ENTRY(Reset_Handler)
 
 _estack = 0x20002000;     	/* end of $(RAM_LENGTH) RAM */
 
-_Min_Heap_Size = 4096;      	  /* required amount of heap  */
+_Min_Heap_Size = 128;      	  /* required amount of heap  */
 _Min_Stack_Size = 0x100; 		/* required amount of stack (256 bytes) */
 
 MEMORY

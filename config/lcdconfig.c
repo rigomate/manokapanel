@@ -320,10 +320,13 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
       //
       // Remember buffer index to be used by ISR
       //
-      if( xSemaphoreGive( xSemaphore ) != pdTRUE )
+      if (xSemaphore != NULL)
       {
-          // We would not expect this call to fail because we must have
-          // obtained the semaphore to get here.
+          if( xSemaphoreGive( xSemaphore ) != pdTRUE )
+          {
+              // We would not expect this call to fail because we must have
+              // obtained the semaphore to get here.
+          }
       }
       GUI_MULTIBUF_Confirm(pbuffer->Index);
       break;

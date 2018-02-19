@@ -7,6 +7,10 @@
 #include "7003b.h"
 #include <vector>
 
+extern "C" {
+#include "SEGGER_SYSVIEW.h"
+}
+
 static const uint8_t image_data_viragok_kis[1024] = {
     0x00, 0x00, 0x00, 0x00,
     0x00, 0x20, 0x00, 0x00,
@@ -278,6 +282,11 @@ void display_7003b::sendcommand(uint8_t byte)
     outputStream->write(byte);
 }
 
+void display_7003b::sendBuffer(const void *buffer, uint32_t len)
+{
+    outputStream->write(buffer, len);
+}
+
 //Actual display initializer stuff
 void display_7003b::initDisplay(void)
 {
@@ -509,12 +518,13 @@ void display_7003b::bitmap(void)
         {
             sendcommand(datapointer[i]);
         }
+    //sendBuffer(datapointer, 512);
 }
 
 void display_7003b::init(void)
 {
     UsartPeripheral<UsartSetup,PERIPHERAL_USART1>::Parameters usartparams;
-    usartparams.usart_baudRate = 115200;
+    usartparams.usart_baudRate = 500000;
     usartparams.usart_synchronous = true;
     usartparams.usart_mode = USART_Mode_Tx;
 

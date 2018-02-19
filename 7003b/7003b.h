@@ -74,6 +74,7 @@ protected:
 private:
     void initDisplay(void);
     void sendcommand(uint8_t byte);
+    void sendBuffer(const void *buffer, uint32_t len);
 
     /*These will be created by the constructor, but access is required elsewhere also
      * So we create define a pointer in the class body
