@@ -375,7 +375,7 @@ static void prvLedTask( void *pvParameters )
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,6,9> > pb;
     GpioC<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,14> > pc;
 
-    buttonpoti<timer3_3, Button_PB7> buttonpoti1(false);
+    buttonpoti<timer3_3, Button_PB7> buttonpoti1(true);
     buttonpoti<timer3_2, Button_PC14> buttonpoti2(true);
     buttonpoti<timer1_4, Button_PB9> buttonpoti3(false);
 
