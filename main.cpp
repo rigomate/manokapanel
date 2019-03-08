@@ -265,7 +265,7 @@ static void emwinTask( void *pvParameters ) {
   bool doscroll = false;
   TickType_t xLastWakeTime;
 
-  EmwinDisplay emwindisplay(20, 20);
+  EmwinDisplay emwindisplay(128, 32);
   GameOfLife gameoflife(&emwindisplay, emwindisplay.getXwidth(),emwindisplay.getYwidth(), GameOfLife::RANDOM);
 
 
