@@ -262,12 +262,19 @@ static void prvDisplayTask( void *pvParameters )
 static void emwinTask( void *pvParameters ) {
   int xPos = 0;
   uint32_t display_counter = 0;
+  uint32_t gameoflife_counter = 0;
   bool doscroll = false;
   TickType_t xLastWakeTime;
 
   EmwinDisplay emwindisplay(128, 32);
   GameOfLife gameoflife(&emwindisplay, emwindisplay.getXwidth(),emwindisplay.getYwidth(), GameOfLife::RANDOM);
 
+  GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
+  AutoRepeatPushButton button(pb[8],true,999999,150);
+  AutoRepeatPushButton button_counter(pb[5],true,5000,150);
+
+  pwm pwmc;
+  GpioB<DefaultDigitalOutputFeature<3> > pb_out;
 
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC, ENABLE);
   GUI_Init();
@@ -287,7 +294,14 @@ static void emwinTask( void *pvParameters ) {
 
 
   xLastWakeTime = xTaskGetTickCount ();
-
+  for (int i = 0; i < 128; i++)
+  {
+      GUI_MULTIBUF_Begin();
+      GUI_Clear();
+      GUI_DrawBitmap(&bmvirag, xPos--,0);
+      GUI_MULTIBUF_End();
+      vTaskDelayUntil( &xLastWakeTime, 35 / portTICK_RATE_MS );
+  }
 
   GUI_MULTIBUF_Begin();
   GUI_Clear();
@@ -295,19 +309,71 @@ static void emwinTask( void *pvParameters ) {
   GUI_DispStringAt("Lili Panel", 128/2, 16);
   GUI_MULTIBUF_End();
 
-
-
-
   while (1) {
 
-	  GUI_MULTIBUF_Begin();
-	  gameoflife.DrawTable();
-	  GUI_MULTIBUF_End();
+      if(button.getState()==PushButton::Pressed)
+          {
+              xPos = 0;
+              doscroll = true;
+          }
 
-	  gameoflife.NextStep();
+      if (button_counter.getState() == PushButton::Pressed)
+          {
+              doscroll = false;
+              GUI_MULTIBUF_Begin();
+              GUI_Clear();
+              GUI_SetTextAlign(GUI_TA_HCENTER | GUI_TA_VCENTER);
+              GUI_DispDecAt(display_counter++, 128/2, 16, 8);
+              GUI_MULTIBUF_End();
+          }
+
+      if(pb[8].read())
+          {
+              pb_out[3].set();
+          }
+      else
+          {
+              pb_out[3].reset();
+          }
 
 
-    vTaskDelay(200 / portTICK_RATE_MS);
+      if(pb[5].read())
+          {
+              pwmc.setpwm(34, 0);
+          }
+      else
+          {
+              pwmc.setpwm(34, 100);
+          }
+
+      xLastWakeTime = xTaskGetTickCount ();
+      if (doscroll)
+      {
+          GUI_MULTIBUF_Begin();
+          GUI_Clear();
+          GUI_DrawBitmap(&bmvirag, xPos--,0);
+          GUI_MULTIBUF_End();
+          vTaskDelayUntil( &xLastWakeTime, 35 / portTICK_RATE_MS );
+          if(xPos < -128)
+          {
+              doscroll = false;
+          }
+      }
+
+      if (display_counter > 10)
+      {
+    	  if (gameoflife_counter > 100)
+    	  {
+    		  gameoflife_counter = 0;
+        	  GUI_MULTIBUF_Begin();
+        	  gameoflife.DrawTable();
+        	  GUI_MULTIBUF_End();
+
+        	  gameoflife.NextStep();
+    	  }
+    	  gameoflife_counter++;
+      }
+    vTaskDelay(5 / portTICK_RATE_MS);
   }
 }
 
@@ -492,14 +558,14 @@ int main() {
     SEGGER_SYSVIEW_Start();
     taskcreatereturn = xTaskCreate( prvDisplayTask, "Display", 256, NULL, 2, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    taskcreatereturn = xTaskCreate( emwinTask, "emwin", 512, NULL, 1, NULL );
+    taskcreatereturn = xTaskCreate( emwinTask, "emwin", 392, NULL, 1, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    //taskcreatereturn = xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
-    //configASSERT(taskcreatereturn == pdPASS);
-    //taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 1, NULL );
-    //configASSERT(taskcreatereturn == pdPASS);
-    //taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
-    //configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 1, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
 
   /* Start the scheduler. */
     vTaskStartScheduler();
