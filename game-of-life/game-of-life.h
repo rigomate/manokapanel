@@ -46,6 +46,7 @@ public:
 	uint32_t getFieldValue(Coord &&coord);
 	void ClearField(void);
 	uint32_t SumNeighbours(Coord &&coord);
+	void SetRandom(void);
 
 private:
 	Display *display;
@@ -54,7 +55,7 @@ private:
 	uint32_t FieldSize;
 	Field *field;
 
-	void SetRandom(void);
+
 	void SetCool(void);
 
 	void setFieldValue(Coord &&coord, Field *FieldToSet);

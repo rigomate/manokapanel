@@ -268,6 +268,7 @@ static void emwinTask( void *pvParameters ) {
 
   EmwinDisplay emwindisplay(128, 32);
   GameOfLife gameoflife(&emwindisplay, emwindisplay.getXwidth(),emwindisplay.getYwidth(), GameOfLife::RANDOM);
+  bool gameoflifeinit = false;
 
   GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,5,8> > pb;
   AutoRepeatPushButton button(pb[8],true,999999,150);
@@ -362,6 +363,13 @@ static void emwinTask( void *pvParameters ) {
 
       if (display_counter > 10)
       {
+    	  if (gameoflifeinit == false)
+    	  {
+    		  gameoflife.SetRandom();
+    		  gameoflifeinit = true;
+
+    	  }
+
     	  if (gameoflife_counter > 100)
     	  {
     		  gameoflife_counter = 0;

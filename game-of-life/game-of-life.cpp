@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cstring>
-
+#include "timer/manotimer.h"
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 void GameOfLife::ClearField(void)
@@ -20,7 +20,9 @@ void GameOfLife::SetRandom(void)
 	int random_integer;
 	volatile int  randomint;
 	//srand((unsigned)time(0));
-	srand(92243);
+	MillisecondTimerMano Timer;
+	volatile int Seedval = static_cast<unsigned>(Timer.millis());
+	srand(Seedval);
 	
 
 	int lowest = 0, highest = 1;
