@@ -3,7 +3,9 @@
 #include <stdint.h>
 #include "display.h"
 #include "Field.h"
-//#include <vector>
+#ifndef STM32PLUS_F1_MD
+#include <vector>
+#endif
 
 class GameOfLife {
 
@@ -30,7 +32,8 @@ public:
 			SetCool();
 		}
 		
-	}/*
+	}
+#ifndef STM32PLUS_F1_MD
 	GameOfLife(Display *display, uint32_t xwidth, uint32_t ywidth, std::vector<Coord> coords) : display(display), xwidth(xwidth), ywidth(ywidth){
 		field = new Field(xwidth, ywidth);
 		FieldSize = xwidth * ywidth;
@@ -39,7 +42,8 @@ public:
 		for (auto i : coords)
 			setFieldValue(i, field);
 	}
-*/
+#endif
+
 	void DrawTable(void);
 	void NextStep(void);
 	uint32_t GetSumOfLiving(void);

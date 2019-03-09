@@ -13,7 +13,7 @@ extern "C" {
 void EmwinDisplay::writeNextpixel(uint32_t value)
 {
 
-	if ((ActualPixel % xwidth) == 0)
+	if ( ((ActualPixel % xwidth) == 0) && (ActualPixel > 0))
 	{
 		CurrentRow++;
 	}

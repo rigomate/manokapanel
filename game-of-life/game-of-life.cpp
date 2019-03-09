@@ -137,23 +137,39 @@ void GameOfLife::clearFieldValue(Coord &&coord, Field *FieldToClear)
 uint32_t GameOfLife::SumNeighbours(Coord &&coord)
 {
 	uint32_t returnval = 0;
+	uint32_t testX = 0;
+	uint32_t testY = 0;
 	for (int32_t y = static_cast<int32_t>(coord.gety()) - 1; y <= static_cast<int32_t>(coord.gety()) + 1; y++)
 	{
 		for (int32_t x = static_cast<int32_t>(coord.getx()) - 1; x <= static_cast<int32_t>(coord.getx()) + 1; x++)
 		{
+			testX = x;
+			testY = y;
 			//Boundary checks of the field
-			if (x < 0) continue;
-			if (y < 0) continue;
+			if (x == -1)
+				{
+				testX = xwidth - 1;
+				}
+			if (y == -1)
+				{
+				testY = ywidth - 1;
+				}
 
-			if (x >= static_cast<int32_t>(xwidth)) continue;
-			if (y >= static_cast<int32_t>(ywidth)) continue;
+			if (x >= static_cast<int32_t>(xwidth))
+				{
+				testX = 0;
+				}
+			if (y >= static_cast<int32_t>(ywidth))
+				{
+				testY = 0;
+				}
 
 			//Same value
 			if (x == static_cast<int32_t>(coord.getx()) && y == static_cast<int32_t>(coord.gety()))
 			{
 				continue;
 			}
-			if (getFieldValue(Coord(x, y)) == 1)
+			if (getFieldValue(Coord(testX, testY)) == 1)
 			{
 				returnval++;
 			}

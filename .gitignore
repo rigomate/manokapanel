@@ -57,3 +57,4 @@ _ReSharper*/
 # eclipse local settings
 
 .settings/
+/unit-test/
