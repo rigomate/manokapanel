@@ -26,6 +26,8 @@ extern "C" {
 #include "SEGGER_SYSVIEW.h"
 }
 
+#include <vector>
+
 uint16_t color1;
 uint16_t c2;
 uint16_t c3;
@@ -58,14 +60,14 @@ static uint16_t delaycounter = 0;
 uint16_t delaydebug;
 static void prvStepperTask( void *pvParameters )
 {
-
+	(void)pvParameters;
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4> > pb;
     stepper_drv8806 stepper(1000 * 60 * 25);
 
     uint16_t poti;
     //static int16_t delay;
     //static uint16_t delaycounter = 0;
-    BaseType_t queuerecieve;
+    BaseType_t queuerecieve = pdFALSE;
     bool shouldstop = false;
 
     for( ;; )
@@ -146,7 +148,7 @@ extern GUI_CONST_STORAGE GUI_BITMAP bmvirag;
 SemaphoreHandle_t xSemaphore = NULL;
 static void prvDisplayTask( void *pvParameters )
 {
-
+	(void)pvParameters;
 #if 0
     display_7003b display;
     display.init();
@@ -260,6 +262,7 @@ static void prvDisplayTask( void *pvParameters )
 #define RECOMMENDED_MEMORY (102L * 5)
 
 static void emwinTask( void *pvParameters ) {
+  (void)pvParameters;
   int xPos = 0;
   uint32_t display_counter = 0;
   uint32_t gameoflife_counter = 0;
@@ -387,10 +390,7 @@ static void emwinTask( void *pvParameters ) {
 
 static void prvLedTask( void *pvParameters )
 {
-
-    uint16_t display_counter = 0;
-    char asciistring[10];
-
+	(void)pvParameters;
 
     vTaskSuspendAll();
     ws2812 colorled;
@@ -492,7 +492,7 @@ static void prvLedTask( void *pvParameters )
 
 static void prvPotiTask( void *pvParameters )
 {
-
+	(void)pvParameters;
     for (int i = 0; i < 7; i++)
         {
             xQueuePoti[i] = xQueueCreate( 1, sizeof( uint16_t ) );
@@ -516,7 +516,7 @@ static void prvPotiTask( void *pvParameters )
 
 static void prvButtonTask( void *pvParameters )
 {
-
+	(void)pvParameters;
     for (int i = 0; i < 7; i++)
         {
             xQueueButton[i] = xQueueCreate( 1, sizeof( uint16_t ) );
@@ -616,6 +616,8 @@ extern "C" {
     void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                         signed char *pcTaskName )
     {
+    	(void)xTask;
+    	(void)pcTaskName;
         for(;;)
             {
                 __NOP();

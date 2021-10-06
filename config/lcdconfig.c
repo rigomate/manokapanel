@@ -201,8 +201,8 @@ static void _ReadMPixels(int LayerIndex, U16 * pBuffer, U32 NumPixels) {
 *
 */
 void LCD_X_Config(void) {
-  GUI_DEVICE * pDevice;
-  GUI_PORT_API PortAPI = {0};
+  //GUI_DEVICE * pDevice;
+  //GUI_PORT_API PortAPI = {0};
   //CONFIG_FLEXCOLOR Config = {0};
 
 
@@ -211,7 +211,7 @@ void LCD_X_Config(void) {
   //
   // Set display driver and color conversion for 1st layer
   //
-  pDevice = GUI_DEVICE_CreateAndLink(DISPLAY_DRIVER, COLOR_CONVERSION, 0, 0);
+  GUI_DEVICE_CreateAndLink(DISPLAY_DRIVER, COLOR_CONVERSION, 0, 0);
   //
   // Display driver configuration
   //
@@ -224,7 +224,7 @@ void LCD_X_Config(void) {
   }
 
   LCD_SetVRAMAddrEx(0, (void *)videoRAM);
-  Addr = videoRAM;
+  Addr = (unsigned long)videoRAM;
   //
   // Function selection, hardware routines (PortAPI) and operation mode (bus, bpp and cache)
   //
@@ -256,12 +256,12 @@ void LCD_X_Config(void) {
 
 int _PendingBuffer;
 static void _ISR_EndOfFrame(void) {
-    unsigned long BufferSize;
+    //unsigned long BufferSize;
     if (_PendingBuffer >= 0) {
     //
     // Calculate address of the given buffer
     //
-    BufferSize = (XSIZE_PHYS * YSIZE_PHYS * BITSPERPIXEL) / 8;
+    //BufferSize = (XSIZE_PHYS * YSIZE_PHYS * BITSPERPIXEL) / 8;
     //Addr = videoRAM + BufferSize * pData->Index;
     //
     // Make the given buffer visible
