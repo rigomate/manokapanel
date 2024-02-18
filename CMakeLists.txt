@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 enable_language(C CXX ASM)
 # Set project name
-project(YourProjectName)
+project(manokapanel)
 
 # Set the C standard to use (C11 in this case)
 set(CMAKE_C_STANDARD 11)
