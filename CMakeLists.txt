@@ -71,7 +71,7 @@ set_target_properties(${PROJECT_NAME}.elf PROPERTIES
 
 # Link against libstm32plus.a
 target_link_libraries(${PROJECT_NAME}.elf
-    ${CMAKE_SOURCE_DIR}/../stm32plus//lib/build/fast-f1md-8000000e/libstm32plus-fast-f1md-8000000e.a
+    ${CMAKE_SOURCE_DIR}/../stm32plus/lib/build/fast-f1mdvl-8000000e/libstm32plus-fast-f1mdvl-8000000e.a
     ${CMAKE_SOURCE_DIR}/stemwin/STemWinLibrary532/Lib/STemWin532_CM3_GCC.a
 )
 
