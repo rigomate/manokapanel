@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
+enable_language(C CXX ASM)
 # Set project name
 project(YourProjectName)
 
@@ -37,10 +38,12 @@ set(SOURCE_DIRS
     game-of-life
     potmeter
     pwm
+    stemwin
     stepper
     system
     systemview
     ws2812
+    timer
 )
 
 # Collect source files
@@ -49,16 +52,19 @@ foreach(dir ${SOURCE_DIRS})
     list(APPEND project_sources ${sources})
 endforeach()
 
+# Add main.cpp to the project
+list(APPEND project_sources main.cpp)
+
 # Include directories
 include_directories(${SOURCE_DIRS} . ../stm32plus/lib/include/ ../stm32plus/lib/ ../stm32plus/lib/include/stl)
 
 # Add executable target
 add_executable(${PROJECT_NAME}.elf ${project_sources})
 
-list(APPEND project_sources system/f1md/Startup.asm)
+
 
 # Set linker flags
-set(LINKER_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/system/f1md/Linker.ld)
+set(LINKER_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/system/f1mdvl_24_8/Linker.ld)
 set_target_properties(${PROJECT_NAME}.elf PROPERTIES
     LINK_FLAGS "-T${LINKER_SCRIPT_PATH} -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--gc-sections"
 )
@@ -66,6 +72,7 @@ set_target_properties(${PROJECT_NAME}.elf PROPERTIES
 # Link against libstm32plus.a
 target_link_libraries(${PROJECT_NAME}.elf
     ${CMAKE_SOURCE_DIR}/../stm32plus//lib/build/fast-f1md-8000000e/libstm32plus-fast-f1md-8000000e.a
+    ${CMAKE_SOURCE_DIR}/stemwin/STemWinLibrary532/Lib/STemWin532_CM3_GCC.a
 )
 
 # Include FreeRTOS specific configuration
