@@ -49,6 +49,7 @@ typedef Timer1<TimerChannel4Feature<>,
 typedef GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,9> > Button_PB9;
 
 QueueHandle_t xQueuePoti[7];
+QueueHandle_t xQueuePoti2[7];
 QueueHandle_t xQueueButton[7];
 volatile int debugqueue;
 uint16_t potidebug[7];
@@ -58,6 +59,49 @@ static int16_t delay;
 static int16_t delayabs;
 static uint16_t delaycounter = 0;
 uint16_t delaydebug;
+
+char* itoa(int value, char* result, int base) {
+    // Check for invalid base
+    if (base < 2 || base > 36) {
+        *result = '\0';
+        return result;
+    }
+
+    // Handle 0 explicitly, otherwise empty string is returned
+    if (value == 0) {
+        *result++ = '0';
+        *result = '\0';
+        return result - 1;
+    }
+
+    // Handle negative numbers for bases other than 10
+    if (value < 0 && base != 10) {
+        *result++ = '-';
+        value = -value;
+    }
+
+    // Process individual digits
+    while (value != 0) {
+        int rem = value % base;
+        *result++ = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+        value /= base;
+    }
+
+    *result = '\0';
+
+    // Reverse the string
+    char* start = result - 1;
+    char* end = result - 1;
+
+    while (start > result - 1 - (value < 0)) {
+        char temp = *start;
+        *start-- = *end;
+        *end-- = temp;
+    }
+
+    return result - 1;
+}
+
 static void prvStepperTask( void *pvParameters )
 {
 	(void)pvParameters;
@@ -496,8 +540,12 @@ static void prvPotiTask( void *pvParameters )
     for (int i = 0; i < 7; i++)
         {
             xQueuePoti[i] = xQueueCreate( 1, sizeof( uint16_t ) );
-
-                configASSERT(xQueuePoti[i] != NULL);
+            configASSERT(xQueuePoti[i] != NULL);
+        }
+    for (int i = 0; i < 7; i++)
+        {
+            xQueuePoti2[i] = xQueueCreate( 1, sizeof( uint16_t ) );
+            configASSERT(xQueuePoti2[i] != NULL);
         }
 
     potmeter poti;
@@ -508,9 +556,96 @@ static void prvPotiTask( void *pvParameters )
             {
                 uint16_t tempval = poti.getVal(i);
                 debugqueue = xQueueSend(xQueuePoti[i], &tempval, ( TickType_t ) 0);
+                xQueueSend(xQueuePoti2[i], &tempval, ( TickType_t ) 0);
             }
 
         vTaskDelay(5);
+    }
+}
+
+static void prvUartTask( void *pvParameters )
+{
+	(void)pvParameters;
+
+	Usart2<>::Parameters parameters(9600);
+    parameters.usart_mode = USART_Mode_Tx;
+    Usart2<> usart(parameters);
+
+    BaseType_t queuerecieve = pdFALSE;
+	for( ;; )
+    {
+		uint16_t poti;
+		if (xQueuePoti2[1] != NULL)
+			{
+				queuerecieve = xQueueReceive(xQueuePoti2[0], &poti, (TickType_t) 0);
+			}
+		if(queuerecieve == pdTRUE)
+		{
+			int32_t val = poti - (4096 / 2);
+			if (val < 200 && val > -200)
+			{
+				val = 0;
+			}
+			val = (val * 100) / (4096 / 2);
+			if (val >= 100) val = 99;
+			if (val <= -100) val = -99;
+			char buffer[20]{0};
+			char *bufferptr = buffer;
+
+			snprintf(buffer,20,"$P2 %ld\r", val);
+			while(*bufferptr != 0)
+			{
+				usart.send(*bufferptr);
+				bufferptr++;
+			}
+		}
+		vTaskDelay(50);
+		if (xQueuePoti2[0] != NULL)
+			{
+				queuerecieve = xQueueReceive(xQueuePoti2[4], &poti, (TickType_t) 0);
+			}
+		if(queuerecieve == pdTRUE)
+		{
+			int32_t val = poti - (4096 / 2);
+			if (val < 200 && val > -200)
+			{
+				val = 0;
+			}
+			val = (val * 100) / (4096 / 2);
+			if (val > 100) val = 100;
+			if (val < -100) val = -100;
+			char buffer[20]{0};
+			char *bufferptr = buffer;
+
+			snprintf(buffer,20,"$P0 %ld\r", val);
+			while(*bufferptr != 0)
+			{
+				usart.send(*bufferptr);
+				bufferptr++;
+			}
+		}
+		vTaskDelay(50);
+		if (xQueuePoti2[0] != NULL)
+			{
+				queuerecieve = xQueueReceive(xQueuePoti2[3], &poti, (TickType_t) 0);
+			}
+		if(queuerecieve == pdTRUE)
+		{
+			int32_t val = poti;
+			val = (val * 100) / 4096;
+			if (val > 100) val = 100;
+			char buffer[20]{0};
+			char *bufferptr = buffer;
+
+			snprintf(buffer,20,"$P1 %ld\r", val);
+			while(*bufferptr != 0)
+			{
+				usart.send(*bufferptr);
+				bufferptr++;
+			}
+		}
+
+        vTaskDelay(50);
     }
 }
 
@@ -573,6 +708,8 @@ int main() {
     taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 1, NULL );
     configASSERT(taskcreatereturn == pdPASS);
     taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+    configASSERT(taskcreatereturn == pdPASS);
+    taskcreatereturn = xTaskCreate( prvUartTask, "Uart", 256, NULL, 5, NULL );
     configASSERT(taskcreatereturn == pdPASS);
 
   /* Start the scheduler. */
