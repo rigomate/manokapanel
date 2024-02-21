@@ -60,6 +60,32 @@ static int16_t delayabs;
 static uint16_t delaycounter = 0;
 uint16_t delaydebug;
 
+int32_t normalizepoti(uint16_t poti)
+{
+	int32_t val = poti - (4096 / 2);
+	if (val < 200 && val > -200)
+	{
+		val = 0;
+	}
+	val = (val * 100) / (4096 / 2);
+	return val;
+}
+template <typename Usart>
+void UartSend(Usart usart, const char* format, ...) {
+    va_list args;
+
+	char buffer[20]{0};
+	char *bufferptr = buffer;
+    va_start(args, format);
+    vsprintf(buffer, format, args);
+    va_end(args);
+	while(*bufferptr != 0)
+	{
+		usart.send(*bufferptr);
+		bufferptr++;
+	}
+}
+
 char* itoa(int value, char* result, int base) {
     // Check for invalid base
     if (base < 2 || base > 36) {
@@ -570,80 +596,59 @@ static void prvUartTask( void *pvParameters )
 	Usart2<>::Parameters parameters(9600);
     parameters.usart_mode = USART_Mode_Tx;
     Usart2<> usart(parameters);
+    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4> > pb;
 
     BaseType_t queuerecieve = pdFALSE;
 	for( ;; )
     {
 		uint16_t poti;
-		if (xQueuePoti2[1] != NULL)
+		 if (!pb[4].read())
+		 {
+			if (xQueuePoti2[1] != NULL)
+				{
+					queuerecieve = xQueueReceive(xQueuePoti2[0], &poti, (TickType_t) 0);
+				}
+			if(queuerecieve == pdTRUE)
 			{
-				queuerecieve = xQueueReceive(xQueuePoti2[0], &poti, (TickType_t) 0);
+				auto val = normalizepoti(poti);
+				if (val >= 100) val = 99;
+				if (val <= -100) val = -99;
+				UartSend(usart, "$P2 %ld\r", val);
 			}
-		if(queuerecieve == pdTRUE)
-		{
-			int32_t val = poti - (4096 / 2);
-			if (val < 200 && val > -200)
+			vTaskDelay(50);
+			if (xQueuePoti2[0] != NULL)
+				{
+					queuerecieve = xQueueReceive(xQueuePoti2[4], &poti, (TickType_t) 0);
+				}
+			if(queuerecieve == pdTRUE)
 			{
-				val = 0;
+				auto val = normalizepoti(poti);
+				if (val > 100) val = 100;
+				if (val < -100) val = -100;
+				UartSend(usart, "$P0 %ld\r", val);
 			}
-			val = (val * 100) / (4096 / 2);
-			if (val >= 100) val = 99;
-			if (val <= -100) val = -99;
-			char buffer[20]{0};
-			char *bufferptr = buffer;
+			vTaskDelay(50);
+			if (xQueuePoti2[0] != NULL)
+				{
+					queuerecieve = xQueueReceive(xQueuePoti2[3], &poti, (TickType_t) 0);
+				}
+			if(queuerecieve == pdTRUE)
+			{
+				int32_t val = poti;
+				val = (val * 100) / 4096;
+				if (val > 100) val = 100;
+				UartSend(usart, "$P1 %ld\r", val);
 
-			snprintf(buffer,20,"$P2 %ld\r", val);
-			while(*bufferptr != 0)
-			{
-				usart.send(*bufferptr);
-				bufferptr++;
 			}
-		}
-		vTaskDelay(50);
-		if (xQueuePoti2[0] != NULL)
-			{
-				queuerecieve = xQueueReceive(xQueuePoti2[4], &poti, (TickType_t) 0);
-			}
-		if(queuerecieve == pdTRUE)
-		{
-			int32_t val = poti - (4096 / 2);
-			if (val < 200 && val > -200)
-			{
-				val = 0;
-			}
-			val = (val * 100) / (4096 / 2);
-			if (val > 100) val = 100;
-			if (val < -100) val = -100;
-			char buffer[20]{0};
-			char *bufferptr = buffer;
+		 }
+		 else
+		 {
+			 UartSend(usart, "$P0 0\r");
+			 UartSend(usart, "$P1 0\r");
+			 UartSend(usart, "$P2 0\r");
+		 }
 
-			snprintf(buffer,20,"$P0 %ld\r", val);
-			while(*bufferptr != 0)
-			{
-				usart.send(*bufferptr);
-				bufferptr++;
-			}
-		}
-		vTaskDelay(50);
-		if (xQueuePoti2[0] != NULL)
-			{
-				queuerecieve = xQueueReceive(xQueuePoti2[3], &poti, (TickType_t) 0);
-			}
-		if(queuerecieve == pdTRUE)
-		{
-			int32_t val = poti;
-			val = (val * 100) / 4096;
-			if (val > 100) val = 100;
-			char buffer[20]{0};
-			char *bufferptr = buffer;
 
-			snprintf(buffer,20,"$P1 %ld\r", val);
-			while(*bufferptr != 0)
-			{
-				usart.send(*bufferptr);
-				bufferptr++;
-			}
-		}
 
         vTaskDelay(50);
     }
@@ -684,19 +689,6 @@ int main() {
 
     RCC_GetClocksFreq((RCC_ClocksTypeDef*)&RCC_Clocks);
 
-  //display_7003b test;
-
-  //stepper_drv8806 stepper;
-  //MillisecondTimer::initialise();
-  //std::string maki("maki");
-  //test.sendstring("maki");
-  //ws2812 colorled;
-  //potmeter poti;
-
-
-
-  //test.bitmap();
-  //test.horizontal_scroll();
     SEGGER_SYSVIEW_Conf();
     SEGGER_SYSVIEW_Start();
     taskcreatereturn = xTaskCreate( prvDisplayTask, "Display", 256, NULL, 2, NULL );
@@ -716,34 +708,6 @@ int main() {
     vTaskStartScheduler();
   while(1)
       {
-/*
-          if (direction == 0)
-              {
-                  stepper.stepPositive();
-              }
-          else
-          {
-              stepper.stepNegative();
-          }
-
-          MillisecondTimer::delay(5);
-          poti.startConversion();
-
-
-          color1 = poti.getVal(0) >> 4;
-          c2 = (poti.getVal(1) >> 4);
-          c3 = (poti.getVal(2) >> 4);
-
-          if (color1 >100) direction =1;
-          else direction =0;
-
-          if (color1 >10) color1 = color1 /10 + 10;
-          if (c2 >10) c2 = c2 /10 + 10;
-          if (c3 >10) c3 = c3 /10 + 10;
-          colorled.setcolor(0, color1, c2, c3);
-          colorled.setcolor(1, c2, c3, color1);
-          colorled.setcolor(2, c3, color1, c2);
-          */
       }
   // not reached
   return 0;
