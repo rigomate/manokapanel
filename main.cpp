@@ -24,6 +24,7 @@ extern "C" {
 #include "GUI.h"
 #include "semphr.h"
 #include "SEGGER_SYSVIEW.h"
+#include "SEGGER_RTT.h"
 }
 
 #include <vector>
@@ -60,27 +61,28 @@ static int16_t delayabs;
 static uint16_t delaycounter = 0;
 uint16_t delaydebug;
 
-int32_t normalizepoti(uint16_t poti)
+int32_t normalizepoti(uint16_t poti, uint16_t normval)
 {
 	int32_t val = poti - (4096 / 2);
 	if (val < 200 && val > -200)
 	{
 		val = 0;
 	}
-	val = (val * 100) / (4096 / 2);
+	val = (val * normval) / (4096 / 2);
 	return val;
 }
 template <typename Usart>
-void UartSend(Usart usart, const char* format, ...) {
+void UartSend(Usart &usart, const char* format, ...) {
     va_list args;
 
-	char buffer[20]{0};
+	char buffer[40]{0};
 	char *bufferptr = buffer;
     va_start(args, format);
     vsprintf(buffer, format, args);
     va_end(args);
 	while(*bufferptr != 0)
 	{
+		SEGGER_RTT_PutChar(0, *bufferptr);
 		usart.send(*bufferptr);
 		bufferptr++;
 	}
@@ -597,23 +599,29 @@ static void prvUartTask( void *pvParameters )
     parameters.usart_mode = USART_Mode_Tx;
     Usart2<> usart(parameters);
     GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4> > pb;
+    Button_PB7 pb7;
 
     BaseType_t queuerecieve = pdFALSE;
+    bool isactive = true;
 	for( ;; )
     {
 		uint16_t poti;
 		 if (!pb[4].read())
 		 {
+			isactive = true;
 			if (xQueuePoti2[1] != NULL)
 				{
 					queuerecieve = xQueueReceive(xQueuePoti2[0], &poti, (TickType_t) 0);
 				}
 			if(queuerecieve == pdTRUE)
 			{
-				auto val = normalizepoti(poti);
-				if (val >= 100) val = 99;
-				if (val <= -100) val = -99;
-				UartSend(usart, "$P2 %ld\r", val);
+				auto val = normalizepoti(poti, 78);
+				static int32_t prevval{0};
+				if (prevval != val)
+				{
+					UartSend(usart, "$P2 %ld\r", val);
+				}
+				prevval = val;
 			}
 			vTaskDelay(50);
 			if (xQueuePoti2[0] != NULL)
@@ -622,10 +630,13 @@ static void prvUartTask( void *pvParameters )
 				}
 			if(queuerecieve == pdTRUE)
 			{
-				auto val = normalizepoti(poti);
-				if (val > 100) val = 100;
-				if (val < -100) val = -100;
-				UartSend(usart, "$P0 %ld\r", val);
+				auto val = normalizepoti(poti, 100);
+				static int32_t prevval{0};
+				if (prevval != val)
+				{
+					UartSend(usart, "$P0 %ld\r", val);
+				}
+				prevval = val;
 			}
 			vTaskDelay(50);
 			if (xQueuePoti2[0] != NULL)
@@ -637,17 +648,30 @@ static void prvUartTask( void *pvParameters )
 				int32_t val = poti;
 				val = (val * 100) / 4096;
 				if (val > 100) val = 100;
-				UartSend(usart, "$P1 %ld\r", val);
+
+				static int32_t prevval{0};
+				if (prevval != val)
+				{
+					UartSend(usart, "$P1 %ld\r", val);
+				}
+				prevval = val;
 
 			}
 		 }
 		 else
 		 {
-			 UartSend(usart, "$P0 0\r");
-			 UartSend(usart, "$P1 0\r");
-			 UartSend(usart, "$P2 0\r");
+			 if (isactive)
+			 {
+				 UartSend(usart, "$P0 0\r");
+				 UartSend(usart, "$P1 0\r");
+				 UartSend(usart, "$P2 0\r");
+			 }
+			 isactive = false;
 		 }
-
+		if (pb7[7].read() == Bit_RESET)
+		{
+			UartSend(usart, "$B0 1\r");
+		}
 
 
         vTaskDelay(50);
@@ -701,7 +725,7 @@ int main() {
     configASSERT(taskcreatereturn == pdPASS);
     taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    taskcreatereturn = xTaskCreate( prvUartTask, "Uart", 256, NULL, 5, NULL );
+    taskcreatereturn = xTaskCreate( prvUartTask, "Uart", 350, NULL, 5, NULL );
     configASSERT(taskcreatereturn == pdPASS);
 
   /* Start the scheduler. */
