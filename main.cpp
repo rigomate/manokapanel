@@ -50,6 +50,7 @@ typedef Timer1<TimerChannel4Feature<>,
 typedef GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,9> > Button_PB9;
 
 QueueHandle_t xQueuePoti[7];
+QueueHandle_t xQueueVideoBuffer;
 QueueHandle_t xQueuePoti2[7];
 QueueHandle_t xQueueButton[7];
 volatile int debugqueue;
@@ -217,7 +218,6 @@ static void prvStepperTask( void *pvParameters )
 }
 
 extern GUI_CONST_STORAGE GUI_BITMAP bmvirag;
-SemaphoreHandle_t xSemaphore = NULL;
 static void prvDisplayTask( void *pvParameters )
 {
 	(void)pvParameters;
@@ -295,8 +295,8 @@ static void prvDisplayTask( void *pvParameters )
 #endif
 
 
-    xSemaphore = xSemaphoreCreateBinary();
-    configASSERT(xSemaphore != NULL);
+    xQueueVideoBuffer = xQueueCreate( 1, sizeof( void*) );
+    configASSERT(xQueueVideoBuffer != NULL);
     display_7003b display;
     display.init();
 
@@ -316,11 +316,16 @@ static void prvDisplayTask( void *pvParameters )
 
     for(;;)
     {
-        if( xSemaphoreTake( xSemaphore, portMAX_DELAY ) == pdTRUE )
+    	void * videobuf{nullptr};
+    	if (xQueueReceive(xQueueVideoBuffer, &videobuf, portMAX_DELAY) == pdTRUE)
         {
             /* It is time to execute. */
 
-            display.bitmap();
+    		if(videobuf)
+    		{
+            	display.setvideobuffer(videobuf);
+                display.bitmap();
+    		}
 
             /* We have finished our task.  Return to the top of the loop where
             we will block on the semaphore until it is time to execute
@@ -436,7 +441,7 @@ static void emwinTask( void *pvParameters ) {
           }
       }
 
-      if (display_counter > 10)
+      if (display_counter > 100)
       {
     	  if (gameoflifeinit == false)
     	  {
@@ -490,8 +495,11 @@ static void prvLedTask( void *pvParameters )
         for (int i = 0; i< 7;i++)
             {
                 if (i == 1) continue;
-                xQueueReceive(xQueuePoti[i], &tempval, (TickType_t) 0);
-                potidebug[i] = tempval >> 4;
+                if (xQueuePoti[i])
+                {
+                    xQueueReceive(xQueuePoti[i], &tempval, (TickType_t) 0);
+                    potidebug[i] = tempval >> 4;
+                }
             }
 
 
@@ -598,8 +606,11 @@ static void prvUartTask( void *pvParameters )
 	Usart2<>::Parameters parameters(9600);
     parameters.usart_mode = USART_Mode_Tx;
     Usart2<> usart(parameters);
-    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4> > pb;
-    Button_PB7 pb7;
+
+    GpioB<DigitalInputFeature<GPIO_Speed_50MHz,Gpio::PUPD_UP,4,5,7,8> > pb;
+    PushButton button1(pb[8],true);
+    PushButton button2(pb[5],true);
+    PushButton button3(pb[7],true);
 
     BaseType_t queuerecieve = pdFALSE;
     bool isactive = true;
@@ -668,42 +679,27 @@ static void prvUartTask( void *pvParameters )
 			 }
 			 isactive = false;
 		 }
-		if (pb7[7].read() == Bit_RESET)
+		if (button3.getState() == PushButton::ButtonState::Pressed)
 		{
 			UartSend(usart, "$B0 1\r");
 		}
+		if (button1.getState() == PushButton::ButtonState::Pressed)
+		{
+			UartSend(usart, "$B1 1\r");
+		}
+		if (button2.getState() == PushButton::ButtonState::Pressed)
+		{
+			UartSend(usart, "$B2 1\r");
+		}
 
 
-        vTaskDelay(50);
+        vTaskDelay(10);
     }
 }
 
-static void prvButtonTask( void *pvParameters )
-{
-	(void)pvParameters;
-    for (int i = 0; i < 7; i++)
-        {
-            xQueueButton[i] = xQueueCreate( 1, sizeof( uint16_t ) );
-            configASSERT(xQueueButton[i] != NULL);
-        }
-
-    potmeter poti;
-    for( ;; )
-    {
-        poti.startConversion();
-        for (int i = 0; i < 7; i++)
-            {
-                uint16_t tempval = poti.getVal(i);
-                debugqueue = xQueueSend(xQueuePoti[i], &tempval, ( TickType_t ) 0);
-            }
-
-        vTaskDelay(5);
-    }
-}
 
 volatile int direction = 0;
 volatile RCC_ClocksTypeDef RCC_Clocks;
-uint32_t debugval;
 
 
 int main() {
@@ -721,11 +717,11 @@ int main() {
     configASSERT(taskcreatereturn == pdPASS);
     taskcreatereturn = xTaskCreate( prvStepperTask, "Stepper", 256, NULL, 9, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 1, NULL );
+    taskcreatereturn = xTaskCreate( prvLedTask, "Led", 392, NULL, 3, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 5, NULL );
+    taskcreatereturn = xTaskCreate( prvPotiTask, "Poti", 256, NULL, 3, NULL );
     configASSERT(taskcreatereturn == pdPASS);
-    taskcreatereturn = xTaskCreate( prvUartTask, "Uart", 350, NULL, 5, NULL );
+    taskcreatereturn = xTaskCreate( prvUartTask, "Uart", 350, NULL, 3, NULL );
     configASSERT(taskcreatereturn == pdPASS);
 
   /* Start the scheduler. */

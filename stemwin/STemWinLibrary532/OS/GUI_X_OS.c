@@ -185,8 +185,8 @@ functions automatically)
 
 */
 
-void GUI_X_Log (const char *s) { }
-void GUI_X_Warn (const char *s) { }
-void GUI_X_ErrorOut(const char *s) { }
+void GUI_X_Log (const char *s) { (void)*s; }
+void GUI_X_Warn (const char *s) { (void)*s; }
+void GUI_X_ErrorOut(const char *s) { (void)*s; }
 
 /*************************** End of file ****************************/

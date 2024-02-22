@@ -17,16 +17,12 @@ void GameOfLife::ClearField(void)
 
 void GameOfLife::SetRandom(void)
 {
-	int random_integer;
 	volatile int  randomint;
 	//srand((unsigned)time(0));
 	MillisecondTimerMano Timer;
 	volatile int Seedval = static_cast<unsigned>(Timer.millis());
 	srand(Seedval);
 	
-
-	int lowest = 0, highest = 1;
-	int range = (highest - lowest) + 1;
 	for (uint32_t i = 0; i < xwidth * ywidth; i++) {
 		randomint = rand();
 

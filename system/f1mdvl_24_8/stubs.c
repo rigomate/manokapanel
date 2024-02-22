@@ -12,7 +12,10 @@ void _close(){}
 void _lseek(){}
 void _read(){}
 void _write(){}
-void _exit(){}
+void _exit(int) {
+    // Implement your shutdown logic here, if needed
+    while (1) {}  // Default: Infinite loop as a placeholder
+}
 void _fstat(){}
 void _isatty(){}
 void _kill(){}

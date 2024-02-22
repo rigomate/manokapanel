@@ -56,7 +56,6 @@ void __attribute__((weak)) RTCAlarm_IRQHandler(void);
 void __attribute__((weak)) CEC_IRQHandler(void);
 void __attribute__((weak)) TIM6_DAC_IRQHandler(void);
 void __attribute__((weak)) TIM7_IRQHandler(void);
-void __attribute__((weak)) BootRAM(void);
 
 
 void Default_Handler(void) {

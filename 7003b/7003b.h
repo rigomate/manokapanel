@@ -63,6 +63,8 @@ public:
 
     //Destructor
     ~display_7003b();
+
+    void setvideobuffer(void* buf) {videobuffer = buf;}
 protected:
     uint8_t window_id = 0;
     uint16_t cursor_pos_x;
@@ -76,16 +78,19 @@ private:
     void sendcommand(uint8_t byte);
     void sendBuffer(const void *buffer, uint32_t len);
 
+
     /*These will be created by the constructor, but access is required elsewhere also
      * So we create define a pointer in the class body
      */
 
-    Usart1_Custom<UsartSetup> *usart;
+    Usart1_Custom<UsartSetup> *usart{nullptr};
     static UsartPollingOutputStream *outputStream;
 
 
     GpioA<DefaultDigitalOutputFeature<10> > resetpin;
     GpioA<DefaultDigitalInputFeature<12> > busypin;
+
+    void *videobuffer{nullptr};
 
 };
 

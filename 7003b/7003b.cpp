@@ -485,11 +485,9 @@ void display_7003b::set_cursor_pos_x(uint16_t cursor_pos)
 /**
  * (Real-time bit image display)
  */
-extern unsigned long Addr;
 void display_7003b::bitmap(void)
 {
-    if (Addr == 0) return;
-    uint8_t *datapointer = (uint8_t *)Addr;
+    uint8_t *datapointer = static_cast<uint8_t*>(videobuffer);
     select_user_window(getwindow_id());
     //set all screen mode
     /*

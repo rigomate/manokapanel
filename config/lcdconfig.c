@@ -91,8 +91,7 @@ Purpose     : Display controller configuration (single layer)
 **********************************************************************
 */
 
-volatile uint8_t videoRAM[((XSIZE_PHYS * YSIZE_PHYS) / 8 ) * NUM_BUFFERS];
-unsigned long Addr;
+uint8_t videoRAM[((XSIZE_PHYS * YSIZE_PHYS) / 8 ) * NUM_BUFFERS];
 
 /*********************************************************************
 *
@@ -224,7 +223,6 @@ void LCD_X_Config(void) {
   }
 
   LCD_SetVRAMAddrEx(0, (void *)videoRAM);
-  Addr = (unsigned long)videoRAM;
   //
   // Function selection, hardware routines (PortAPI) and operation mode (bus, bpp and cache)
   //
@@ -291,7 +289,7 @@ static void _ISR_EndOfFrame(void) {
 *   Cmd        - Please refer to the details in the switch statement below
 *   pData      - Pointer to a LCD_X_DATA structure
 */
-extern SemaphoreHandle_t xSemaphore;
+extern QueueHandle_t xQueueVideoBuffer;
 int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
   int r;
   LCD_X_SHOWBUFFER_INFO * pbuffer;
@@ -316,17 +314,13 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
   case LCD_X_SHOWBUFFER:
       pbuffer = (LCD_X_SHOWBUFFER_INFO *)pData;
       BufferSize = (XSIZE_PHYS * YSIZE_PHYS * BITSPERPIXEL) / 8;
-      Addr = videoRAM + BufferSize * pbuffer->Index;
+      void *videoRAMValid = videoRAM + BufferSize * pbuffer->Index;
       //
       // Remember buffer index to be used by ISR
       //
-      if (xSemaphore != NULL)
+      if (xQueueVideoBuffer != NULL)
       {
-          if( xSemaphoreGive( xSemaphore ) != pdTRUE )
-          {
-              // We would not expect this call to fail because we must have
-              // obtained the semaphore to get here.
-          }
+    	  xQueueSend(xQueueVideoBuffer, &videoRAMValid, ( TickType_t ) 0);
       }
       GUI_MULTIBUF_Confirm(pbuffer->Index);
       break;

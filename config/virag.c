@@ -126,7 +126,8 @@ GUI_CONST_STORAGE GUI_BITMAP bmvirag = {
   32, // BytesPerLine
   1, // BitsPerPixel
   _acvirag,  // Pointer to picture data (indices)
-  &_Palvirag   // Pointer to palette
+  &_Palvirag,   // Pointer to palette
+  NULL
 };
 
 /*************************** End of file ****************************/
